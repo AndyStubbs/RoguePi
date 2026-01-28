@@ -16,6 +16,7 @@ for( let y = 0; y < m_height; y++ ) {
 }
 
 createRooms();
+createConnections();
 
 // Render the map
 for( let y = 0; y < m_map.length; y += 1 ) {
@@ -41,12 +42,18 @@ function createRooms() {
 			newRoom.y = randomRange( 1, m_height - newRoom.h - 1 );
 			isRoomPlaced = !m_rooms.some( room => isRoomOverlapping( newRoom, room ) );
 			if( isRoomPlaced ) {
-				m_rooms.push( newRoom );
 				carveRoom( newRoom );
+				m_rooms.push( newRoom );
 			}
 		}
 	}
-	return m_rooms;
+}
+
+function createConnections() {
+	for( let i = 1; i < m_rooms.length; i += 1 ) {
+		connectRooms( m_rooms[ i ], m_rooms[ i - 1 ] );
+	}
+	connectRooms( m_rooms[ 0 ], m_rooms[ m_rooms.length - 1 ] );
 }
 
 function isRoomOverlapping( room1, room2 ) {
@@ -67,21 +74,44 @@ function carveRoom( room ) {
 };
 
 function connectRooms( room1, room2 ) {
+	const startX = randomRange( room1.x + 1, room1.x + room1.w - 1 );
+	const startY = randomRange( room1.y + 1, room1.y + room1.h - 1 );
+	const midX = randomRange(
+		Math.min( room1.x + 1, room2.x + 1 ),
+		Math.max( room1.x + room1.w - 2, room2.x + room2.w - 1 )
+	);
+	const midY = randomRange(
+		Math.min( room1.y + 1, room2.y + 1 ),
+		Math.max( room1.y + room1.h - 2, room2.y + room2.h - 1 )
+	);
+	const endX = randomRange( room2.x + 1, room2.x + room2.w - 1 );
+	const endY = randomRange( room2.y + 1, room2.y + room2.h - 1 );
 
+	// Carve from start to mid point
+	carveH( startX, midX, startY );
+	carveV( startY, midY, midX );
+
+	// Carve from mid point to end
+	carveH( midX, endX, midY );
+	carveV( midY, endY, endX );
 }
 
-function carveH( map, x1, x2, y ) {
-	for( let x = Math.min( x1, x2 ); x <= Math.max( x1, x2 ); x++ ) {
-		if( map[ y ][ x ] === TILE_BLANK ) {
-			map[ y ][ x ] = TILE_PATH;
+function carveH( x1, x2, y ) {
+	const startX = Math.min( x1, x2 );
+	const endX = Math.max( x1, x2 );
+	for( let x = startX; x <= endX; x++ ) {
+		if( m_map[ y ][ x ] === TILE_BLANK ) {
+			m_map[ y ][ x ] = TILE_PATH;
 		}
 	}
 }
 
-function carveV( map, y1, y2, x ) {
-	for( let y = Math.min( y1, y2 ); y <= Math.max( y1, y2 ); y++ ) {
-		if( map[ y ][ x ] === TILE_BLANK ) {
-			map[ y ][ x ] = TILE_PATH;
+function carveV( y1, y2, x ) {
+	const startY = Math.min( y1, y2 );
+	const endY = Math.max( y1, y2 );
+	for( let y = startY; y <= endY; y++ ) {
+		if( m_map[ y ][ x ] === TILE_BLANK ) {
+			m_map[ y ][ x ] = TILE_PATH;
 		}
 	}
 }

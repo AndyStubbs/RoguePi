@@ -2,8 +2,8 @@
 // File: map.js
 
 window.g_dungeonMap = ( function () {
-	const HIDDEN_DOOR_CHANCE = 0;
-	const HIDDEN_PATH_CHANCE = 0;
+	const HIDDEN_DOOR_CHANCE = 0.025;
+	const HIDDEN_PATH_CHANCE = 0.0025;
 	const ROOM_ITEM_DROP_CHANCE = 0.9;
 	const ROOM_BEND_CHANCE = 0.5;
 	const ENEMY_SPAWN_CHANCE = 0.65;
@@ -24,7 +24,7 @@ window.g_dungeonMap = ( function () {
 			return createMap( width, height, level );
 		}
 
-		//addDeadEnds( map, rooms, width, height );
+		addDeadEnds( map, rooms, width, height );
 		addExtraConnection( map, rooms, width, height );
 		const doorData = buildRoomWallsAndDoors( map, rooms, width, height );
 

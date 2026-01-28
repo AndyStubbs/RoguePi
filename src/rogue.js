@@ -17,6 +17,7 @@ for( let y = 0; y < m_height; y++ ) {
 
 createRooms();
 createConnections();
+placeDoors();
 
 // Render the map
 for( let y = 0; y < m_map.length; y += 1 ) {
@@ -92,16 +93,18 @@ function carveRoom( room ) {
 function connectRooms( room1, room2 ) {
 	const startX = randomRange( room1.x + 1, room1.x + room1.w - 1 );
 	const startY = randomRange( room1.y + 1, room1.y + room1.h - 1 );
-	const midX = randomRange(
-		Math.min( room1.x + 1, room2.x + 1 ),
-		Math.max( room1.x + room1.w - 2, room2.x + room2.w - 1 )
-	);
-	const midY = randomRange(
-		Math.min( room1.y + 1, room2.y + 1 ),
-		Math.max( room1.y + room1.h - 2, room2.y + room2.h - 1 )
-	);
 	const endX = randomRange( room2.x + 1, room2.x + room2.w - 1 );
 	const endY = randomRange( room2.y + 1, room2.y + room2.h - 1 );
+
+	const midX = randomRange(
+		Math.min( startX, endX ),
+		Math.max( startX, endX )
+	);
+
+	const midY = randomRange(
+		Math.min( startY, endY ),
+		Math.max( startY, endY )
+	);
 
 	// Carve from start to mid point
 	carveH( startX, midX, startY );
@@ -128,6 +131,41 @@ function carveV( y1, y2, x ) {
 	for( let y = startY; y <= endY; y++ ) {
 		if( m_map[ y ][ x ] === TILE_BLANK ) {
 			m_map[ y ][ x ] = TILE_PATH;
+		}
+	}
+}
+
+function placeDoors() {
+	for( let y = 1; y < m_height - 1; y++ ) {
+		for( let x = 1; x < m_width - 1; x++ ) {
+			if( !TILE_WALLS.includes( m_map[ y ][ x ] ) ) {
+				continue;
+			}
+
+			const up = m_map[ y - 1 ][ x ];
+			const down = m_map[ y + 1 ][ x ];
+			const left = m_map[ y ][ x - 1 ];
+			const right = m_map[ y ][ x + 1 ];
+
+			// vertical door
+			if(
+				TILE_WALKABLE_NOT_DOOR.includes( up ) &&
+				TILE_WALKABLE_NOT_DOOR.includes( down ) &&
+				TILE_WALLS.includes( left ) &&
+				TILE_WALLS.includes( right )
+			) {
+				m_map[ y ][ x ] = TILE_DOOR;
+			}
+
+			// horizontal door
+			else if(
+				TILE_WALKABLE_NOT_DOOR.includes( left ) &&
+				TILE_WALKABLE_NOT_DOOR.includes( right ) &&
+				TILE_WALLS.includes( up ) &&
+				TILE_WALLS.includes( down )
+			) {
+				m_map[ y ][ x ] = TILE_DOOR;
+			}
 		}
 	}
 }

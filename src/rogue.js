@@ -58,14 +58,30 @@ function createConnections() {
 
 function isRoomOverlapping( room1, room2 ) {
 	return !(
-		room1.x + room1.w + 1 < room2.x ||
-		room1.x > room2.x + room2.w + 1 ||
-		room1.y + room1.h + 1 < room2.y ||
-		room1.y > room2.y + room2.h + 1
+		room1.x + room1.w + 2 < room2.x ||
+		room1.x > room2.x + room2.w + 2 ||
+		room1.y + room1.h + 2 < room2.y ||
+		room1.y > room2.y + room2.h + 2
 	);
 }
 
 function carveRoom( room ) {
+
+	// Carve tile walls
+	m_map[ room.y - 1 ][ room.x - 1 ] = TILE_WALL_NW;
+	m_map[ room.y - 1 ][ room.x + room.w ] = TILE_WALL_NE;
+	for( let x = room.x; x < room.x + room.w; x += 1 ) {
+		m_map[ room.y - 1 ][ x ] = TILE_WALL_N;
+		m_map[ room.y + room.h ][ x ] = TILE_WALL_S;
+	}
+	m_map[ room.y + room.h ][ room.x - 1 ] = TILE_WALL_SW;
+	m_map[ room.y + room.h ][ room.x + room.w ] = TILE_WALL_SE;
+	for( let y = room.y; y < room.y + room.h; y += 1 ) {
+		m_map[ y ][ room.x - 1 ] = TILE_WALL_E;
+		m_map[ y ][ room.x + room.w ] = TILE_WALL_W;
+	}
+
+	// Carve floor
 	for( let y = room.y; y < room.y + room.h; y++ ) {
 		for ( let x = room.x; x < room.x + room.w; x++ ) {
 			m_map[ y ][ x ] = TILE_FLOOR;

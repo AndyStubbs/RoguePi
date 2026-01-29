@@ -161,7 +161,15 @@ const ITEMS = {
 	}
 };
 
-const ALL_ITEMS = normalizeItems( ITEMS );
+const ALL_ITEMS = Object.values( ITEMS ).map( item => {
+	if( !item.plural ) {
+		item.plural = item.name + "s";
+	}
+	if( !item.article ) {
+		item.article = "a";
+	}
+	return item;
+} );
 
 window.g_items = ( function () {
 	return {

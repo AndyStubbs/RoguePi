@@ -59,7 +59,7 @@ window.g_player = ( function () {
 			"lightRadius": 3,
 			"lightFade": 0.01,
 			"map": map,
-			"message": [],
+			"messages": [],
 			"items": items,
 			"armor": {
 				"head": null,

@@ -2,9 +2,24 @@
 // File: items.js
 
 window.g_player = ( function () {
+	const RANKS = [
+		"Novice",
+		"Adventurer",
+		"Fighter",
+		"Warrior",
+		"Champion",
+		"Hero",
+		"Legend"
+	];
+	const LEVELS =     [ 10, 25, 60, 100, 150, 500, 1000 ];
+	const HIT_POINTS = [ 15, 20, 35, 50,  65,  85,  100 ];
+	const HEALING_RATE = 0.01;
+
 	return {
 		createPlayer,
-		move
+		move,
+		addExperience,
+		heal
 	};
 
 	function createPlayer( width, height ) {
@@ -45,6 +60,7 @@ window.g_player = ( function () {
 		return {
 			"name": "Player 1",
 			"level": 1,
+			"rank": RANKS[ 0 ],
 			"depth": 1,
 			"lastShop": 1,
 			"experience": 0,
@@ -107,6 +123,27 @@ window.g_player = ( function () {
 		//		player.y = lastPos.y;
 		//	}
 		//}
+	}
+
+	function addExperience( player, amount ) {
+		player.experience += amount;
+		
+		// Advance player level
+		const previousLevel = player.level;
+		player.level = Math.max(
+			LEVELS.findLastIndex( level => level <= player.experience ) + 1, 1
+		);
+		if( previousLevel < player.level ) {
+			player.rank = RANKS[ player.level - 1 ];
+			player.maxHitPoints = HIT_POINTS[ player.level - 1 ];
+			player.messages.push( `You have advanced to the rank of ${player.rank}` );
+		}
+	}
+
+	function heal( player ) {
+		player.hitPoints = Math.min(
+			player.hitPoints + player.maxHitPoints * HEALING_RATE, player.maxHitPoints
+		);
 	}
 
 } )();

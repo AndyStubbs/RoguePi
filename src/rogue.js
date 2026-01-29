@@ -1,5 +1,10 @@
 "use strict";
 // File: rogue.js
+/*
+	global g_player;
+*/
+
+const OFFSET_X = 17;
 
 const g_mainScreen = $.screen( "640x350" );
 const g_messageScreen = $.screen( "320x192", null, true );
@@ -23,16 +28,24 @@ function startGame() {
 
 function render() {
 	$.cls();
+
+	// Render map
 	const litTiles = getLitTiles();
 	for( const tileIndex in litTiles ) {
 		const tile = litTiles[ tileIndex ];
 		m_player.map[ tile.y ][ tile.x ] = m_level.map[ tile.y ][ tile.x ];
 	}
 	g_dungeonMap.renderMap( m_player.map, litTiles );
+
+	// Render Player
 	$.setColor( m_player.color );
 	$.setPos( m_player.x, m_player.y );
 	$.print( m_player.symbol, true );
 
+	// Render Stats
+	renderStats();
+
+	// Render Messages
 	if( m_player.messages.length > 0 ) {
 		let message = m_player.messages.join( "\n" );
 		printMessage( message );
@@ -300,7 +313,7 @@ function addGameKeys() {
 	// Rest
 	$.onkey( "r", "down", () => {
 		endTurn();
-		run();
+		render();
 	}, false, true );
 }
 
@@ -347,7 +360,7 @@ function renderStats() {
 	printTitle( m_player.name );
 	$.print();
 	$.setColor( 3 );
-	printStat( "RNK", RANKS[ m_player.level - 1 ] );
+	printStat( "RNK", m_player.rank );
 	printStat( "EXP", m_player.experience );
 	printStat( "GLD", m_player.gold, 90 );
 	printStat( "ATT", m_player.attack, 2 );
@@ -363,7 +376,7 @@ function renderStats() {
 	$.print();
 	for( let i = 0; i < m_player.items.length; i += 1 ) {
 		const item = m_player.items[ i ];
-		let itemText = window.properName( item.name );
+		let itemText = g_util.properName( item.name );
 		if( item.quantity > 1 ) {
 			itemText += ` (${item.quantity})`;
 		}
@@ -388,11 +401,11 @@ function renderStats() {
 }
 
 function printTitle( title ) {
-	const leftPadding = Math.floor( ( m_offsetX - title.length ) / 2 );
-	const rightPadding = m_offsetX - leftPadding - title.length;
+	const leftPadding = Math.floor( ( OFFSET_X - title.length ) / 2 );
+	const rightPadding = OFFSET_X - leftPadding - title.length;
 	$.print( "".padEnd( leftPadding, " " ) + title +  "".padStart( rightPadding, " " ), true );
 	const posPx = $.getPosPx();
-	$.rect( 4, posPx.y - 4, m_offsetX * 8 - 4, 16 );
+	$.rect( 4, posPx.y - 4, OFFSET_X * 8 - 4, 16 );
 	$.print();
 }
 
@@ -426,8 +439,8 @@ function drawMessageBorder( x, y, height ) {
 async function useItem( itemIndex ) {
 	if( m_player.items.length === 0 ) {
 		$.setColor( 4 );
-		m_messages.push( "You have no items to use." );
-		run();
+		m_player.messages.push( "You have no items to use." );
+		render();
 		return;
 	}
 
@@ -450,8 +463,11 @@ async function useItem( itemIndex ) {
 				m_player.weapons.range &&
 				m_player.weapons.range.missileType !== item.weapon
 			) {
-				m_player.messages.push( `You cannot equip ${itemDescription} because it is not compatible your ranged weapon.` );
-				run();
+				m_player.messages.push(
+					`You cannot equip ${itemDescription} because it is not compatible your ` +
+					`ranged weapon.`
+				);
+				render();
 				return;
 			}
 			if( m_player.weapons[ item.weapon ] ) {
@@ -511,14 +527,14 @@ async function useItem( itemIndex ) {
 			}
 		}
 		endTurn();
-		run();
+		render();
 	} else {
 		if( typeof itemIndex === "number" ) {
 			m_player.messages.push( `There is no item at index ${itemIndex}.` );
 		} else {
 			m_player.messages.push( "Use item cancelled." );
 		}
-		run();
+		render();
 	}
 }
 
@@ -526,7 +542,7 @@ async function dropItem() {
 	if( m_player.items.length === 0 ) {
 		$.setColor( 4 );
 		m_player.messages.push( "You have no items to drop." );
-		run();
+		render();
 		return;
 	}
 
@@ -560,36 +576,37 @@ async function dropItem() {
 			m_player.messages.push( "Drop item cancelled." );
 		}
 	}
-	run();
+	render();
 }
 
 async function rangeAttack() {	
 	if( m_player.weapons.range === null ) {
 		$.setColor( 4 );
 		m_player.messages.push( "You don't have a ranged weapon equipped." );
-		run();
+		render();
 		return;
 	}
 	if( m_player.weapons.range.missileType && m_player.weapons.missile === null ) {
 		$.setColor( 4 );
 		m_player.messages.push( "You don't have any missiles equipped." );
-		run();
+		render();
 		return;
 	}
 
 	const direction = ( await promptMessage( "Enter direction (movement key):", true ) ).key;
 	if( direction === "Escape" ) {
 		m_player.messages.push( "Range attack cancelled." );
-		run();
+		render();
 		return;
 	}
 
 	const MOVEMENT_KEYS = [
-		"w", "a", "s", "d", "q", "e", "c", "z", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", "Home", "PageUp", "PageDown", "End"
+		"w", "a", "s", "d", "q", "e", "c", "z", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight",
+		"Home", "PageUp", "PageDown", "End"
 	];
 	if( !MOVEMENT_KEYS.includes( direction ) ) {
 		m_player.messages.push( "Direction is not valid" );
-		run();
+		render();
 		return;
 	}
 
@@ -619,7 +636,7 @@ async function rangeAttack() {
 		m_player.items.splice( missileIndex, 1 );
 	}
 	endTurn();
-	run();
+	render();
 }
 
 async function fireMissile( x, y, direction, distance, self ) {
@@ -670,7 +687,7 @@ async function fireMissile( x, y, direction, distance, self ) {
 		x += dx;
 		y += dy;
 		renderScene();
-		$.setPos( x + m_offsetX, y );
+		$.setPos( x + OFFSET_X, y );
 		$.setColor( 15 );
 		$.print( symbol, true );
 		if( TILE_BLOCKING.includes( m_level.map[ y ][ x ] ) ) {
@@ -724,7 +741,7 @@ function search() {
 		m_player.messages.push( "\tand find nothing." );
 	}
 	endTurn();
-	run();
+	render();
 }
 
 function endTurn() {
@@ -814,19 +831,8 @@ function endTurn() {
 		spawnEnemy();
 	}
 
-	// Advance player level
-	const previousLevel = m_player.level;
-	m_player.level = Math.max(
-		LEVELS.findLastIndex( level => level <= m_player.experience ) + 1, 1
-	);
-	if( previousLevel < m_player.level ) {
-		m_messages.push( `You have advanced to the rank of ${RANKS[ m_player.level - 1 ]}` );
-	}
-
 	// Heal player over time
-	m_player.hitPoints = Math.min(
-		m_player.hitPoints + m_player.maxHitPoints * HEALING_RATE, m_player.maxHitPoints
-	);
+	g_player.heal( m_player );
 }
 
 function combatStrike( entity, target, isRange, missleName ) {
@@ -868,7 +874,7 @@ function combatStrike( entity, target, isRange, missleName ) {
 			m_player.messages.push( `You have been killed.` );
 		} else {
 			m_player.messages.push( `The ${targetName} is killed.` );
-			m_player.experience += target.experience;
+			g_player.addExperience( m_player, target.experience );
 		}
 		m_level.enemies = m_level.enemies.filter( e => e !== target );
 	}

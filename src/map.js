@@ -12,7 +12,8 @@ window.g_dungeonMap = ( function () {
 		"createMap": createMap,
 		"getWallDirection": getWallDirection,
 		"isInRoom": isInRoom,
-		"renderMap": renderMap
+		"renderMap": renderMap,
+		"isWalkable": isWalkable
 	};
 
 	function createMap( width, height, level ) {
@@ -497,6 +498,10 @@ window.g_dungeonMap = ( function () {
 				$.print( tile, true );
 			}
 		}
+	}
+
+	function isWalkable( map, x, y ) {
+		return map[ y ] && map[ y ][ x ] === TILE_FLOOR;
 	}
 
 } )();

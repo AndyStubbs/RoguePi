@@ -16,20 +16,20 @@ const TILE_WALL_SW = String.fromCharCode( 200 );
 const TILE_WALL_S = String.fromCharCode( 205 );
 const TILE_WALL_SE = String.fromCharCode( 188 );
 const TILE_PATH = String.fromCharCode( 176 );
-const WALKABLE = [
+const TILE_WALKABLE = [
 	TILE_FLOOR, TILE_DOOR, TILE_PATH
 ];
-const WALLS = [
+const TILE_WALLS = [
 	TILE_WALL_NW, TILE_WALL_N, TILE_WALL_NE,
 	TILE_WALL_W, TILE_WALL_E,
 	TILE_WALL_SW, TILE_WALL_S, TILE_WALL_SE
 ];
-const BLOCKING = [
-	...WALLS,
+const TILE_BLOCKING = [
+	...TILE_WALLS,
 	TILE_DOOR
 ];
-const FLOORS = [
+const TILE_FLOORS = [
 	TILE_FLOOR, TILE_PATH
 ];
-const DOORS = [ TILE_DOOR ];
-const HIDDEN = [ TILE_HIDDEN_DOOR, TILE_HIDDEN_PATH ];
+const TILE_DOORS = [ TILE_DOOR ];
+const TILE_HIDDEN = [ TILE_HIDDEN_DOOR, TILE_HIDDEN_PATH ];

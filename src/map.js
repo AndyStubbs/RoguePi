@@ -484,6 +484,7 @@ window.g_dungeonMap = ( function () {
 	}
 
 	function renderMap( map ) {
+		$.setColor( 7 );
 		for( let y = 0; y < map.length; y += 1 ) {
 			for( let x = 0; x < map[ y ].length; x += 1 ) {
 				const tile = map[ y ][ x ];

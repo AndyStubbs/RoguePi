@@ -483,12 +483,17 @@ window.g_dungeonMap = ( function () {
 		return getRoom( rooms, x, y ) !== null;
 	}
 
-	function renderMap( map ) {
-		$.setColor( 7 );
+	function renderMap( map, litTiles ) {
+		$.setColor( 8 );
 		for( let y = 0; y < map.length; y += 1 ) {
 			for( let x = 0; x < map[ y ].length; x += 1 ) {
 				const tile = map[ y ][ x ];
 				$.setPos( x, y );
+				if( litTiles[ `${y},${x}` ] ) {
+					$.setColor( 7 );
+				} else {
+					$.setColor( 8 );
+				}
 				$.print( tile, true );
 			}
 		}

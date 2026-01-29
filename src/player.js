@@ -7,8 +7,20 @@ window.g_player = ( function () {
 		move
 	};
 
-	function createPlayer() {
+	function createPlayer( width, height ) {
+		const map = [];
+
+		// Create a blank map for the level size
+		for( let y = 0; y < height; y += 1 ) {
+			map.push( [] );
+			for( let x = 0; x < width; x += 1 ) {
+				map[ y ].push( TILE_BLANK );
+			}
+		}
+
 		return {
+			"map": map,
+			"lightRadius": 3,
 			"x": 0,
 			"y": 0,
 			"color": 14,

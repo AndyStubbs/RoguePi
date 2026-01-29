@@ -1,8 +1,11 @@
 "use strict";
 // File: rogue.js
 
-$.screen( "640x350" );
-$.setFont( 2 );
+const g_mainScreen = $.screen( "640x350" );
+const g_messageScreen = $.screen( "320x192", null, true );
+g_mainScreen.setFont( 2 );
+g_messageScreen.setFont( 2 );
+$.setScreen( g_mainScreen );
 
 let m_level;
 let m_player;
@@ -29,6 +32,31 @@ function render() {
 	$.setColor( m_player.color );
 	$.setPos( m_player.x, m_player.y );
 	$.print( m_player.symbol, true );
+
+	if( m_player.messages.length > 0 ) {
+		let message = m_player.messages.join( "\n" );
+		printMessage( message );
+	}
+	m_player.messages = [];
+
+	// Check player game over
+	if( m_player.hitPoints === 0 ) {
+		$.clearEvents();
+		setTimeout( () => {
+			showGameOverAnimation();
+		}, 1000 );
+		return;	
+	}
+
+	// Check if player has found the exit
+	if( m_player.x === m_level.exitLocation.x && m_player.y === m_level.exitLocation.y ) {
+		printMessage( "You decend lower into the dungeon." );
+		$.clearEvents();
+		setTimeout( () => {
+			renderScene();
+			showLevelClearedAnimation();
+		}, 1000 );
+	}
 }
 
 function getLitTiles() {
@@ -281,4 +309,585 @@ function move( dx, dy ) {
 	render();
 }
 
+function renderStats() {
+	
+	// Compute attack
+	m_player.attack = m_player.level;
+	if( m_player.weapons.melee ) {
+		m_player.attack += player.weapons.melee.attack;
+	}
+	m_player.range = 0;
+	if( m_player.weapons.range ) {
 
+		// Add attack value of missile
+		if( m_player.weapons.missile ) {
+			m_player.range += m_player.level + m_player.weapons.range.attack +
+				m_player.weapons.missile.attack;
+		} else {
+			m_player.range += m_player.level + m_player.weapons.range.attack;
+		}
+	}
+
+	// Compute Defense
+	m_player.defense = m_player.level;
+	for( const itemId in m_player.armor ) {
+		const item = m_player.armor[ itemId ];
+		if( item ) {
+			m_player.defense += item.defense;
+		}
+	}
+	
+	$.setPos( 0, 0 );
+	$.setColor( 8 );
+	$.print();
+	printTitle( "Depth " + m_player.depth );
+	$.print();
+	$.setColor( 14 );
+	$.print();
+	printTitle( m_player.name );
+	$.print();
+	$.setColor( 3 );
+	printStat( "RNK", RANKS[ m_player.level - 1 ] );
+	printStat( "EXP", m_player.experience );
+	printStat( "GLD", m_player.gold, 90 );
+	printStat( "ATT", m_player.attack, 2 );
+	printStat( "RNG", m_player.range, 2 );
+	printStat( "DEF", m_player.defense, 2 );
+	printStat( "HIT", Math.round( m_player.hitPoints ), 3 );
+	printStat( "HUN", Math.round( m_player.hunger ), 3 );
+	printStat( "THR", Math.round( m_player.thirst ), 3 );
+
+	$.print( "\n" );
+	$.setColor( 10 );
+	printTitle( "Items" );
+	$.print();
+	for( let i = 0; i < m_player.items.length; i += 1 ) {
+		const item = m_player.items[ i ];
+		let itemText = window.properName( item.name );
+		if( item.quantity > 1 ) {
+			itemText += ` (${item.quantity})`;
+		}
+		if( item.equipped ) {
+			printStat( i, itemText, 10, 2 );
+		} else {
+			printStat( i, itemText, 10 );
+		}
+	}
+
+	$.setPos( 0, 31 );
+	$.setColor( 3 );
+	printTitle( "Commands" );
+	$.print();
+	printStat( "I", "Use item", 3 );
+	printStat( "J", "Drop item", 3 );
+	printStat( "K", "Ranged attack", 3 );
+	printStat( "L", "Search", 3 );
+	printStat( "R", "Rest", 3 );
+	$.print();
+	printStat( "F1", "Help", 4 );
+}
+
+function printTitle( title ) {
+	const leftPadding = Math.floor( ( m_offsetX - title.length ) / 2 );
+	const rightPadding = m_offsetX - leftPadding - title.length;
+	$.print( "".padEnd( leftPadding, " " ) + title +  "".padStart( rightPadding, " " ), true );
+	const posPx = $.getPosPx();
+	$.rect( 4, posPx.y - 4, m_offsetX * 8 - 4, 16 );
+	$.print();
+}
+
+function printStat( title, val, c1 = 14, c2 = 7 ) {
+	$.setColor( c1 );
+	$.print( " " + title + ": ", true );
+	$.setColor( c2 );
+	$.print( val );
+}
+
+function printMessage( msg ) {
+	g_messageScreen.cls();
+
+	// Print a blank message to get the screen height
+	g_messageScreen.setColor( 0 );
+	g_messageScreen.print( msg );
+	const height = g_messageScreen.getPosPx().y;
+	g_messageScreen.setColor( 7 );
+	g_messageScreen.setPos( 0, 0 );
+	g_messageScreen.print( msg );
+	const { x, y } = getMessagePosition( height );
+	drawMessageBorder( x, y, height );
+	$.drawImage( g_messageScreen, x, y );
+}
+
+function drawMessageBorder( x, y, height ) {
+	$.setColor( 15 );
+	$.rect( x - 8, y - 8, g_messageScreen.width() + 16, height + 16, 16 );
+}
+
+async function useItem( itemIndex ) {
+	if( m_player.items.length === 0 ) {
+		$.setColor( 4 );
+		m_messages.push( "You have no items to use." );
+		run();
+		return;
+	}
+
+	if( itemIndex === null ) {
+		itemIndex = await promptMessage( `Use which item (0-${m_player.items.length - 1})` );
+	}
+	
+	if( itemIndex !== null && itemIndex < m_player.items.length ) {
+		let item = m_player.items[ itemIndex ];
+		if( item.weapon ) {
+
+			let itemDescription = `${item.article} ${item.name}`;
+			if( item.quantity > 1 ) {
+				itemDescription = `the ${item.plural}`;
+			}
+
+			// Make sure you cannot equip a non-compatible missile type
+			if(
+				item.weapon === "missile" &&
+				m_player.weapons.range &&
+				m_player.weapons.range.missileType !== item.weapon
+			) {
+				m_player.messages.push( `You cannot equip ${itemDescription} because it is not compatible your ranged weapon.` );
+				run();
+				return;
+			}
+			if( m_player.weapons[ item.weapon ] ) {
+				m_player.weapons[ item.weapon ].equipped = false;
+			}
+			if( m_player.weapons[ item.weapon ] === item ) {
+				m_player.weapons[ item.weapon ] = null;
+				m_player.messages.push( `You unequip ${itemDescription}.` );
+			} else {
+				item.equipped = true;
+				m_player.weapons[ item.weapon ] = item;
+				m_player.messages.push( `You equip ${itemDescription}.` );
+			}
+
+			// Make sure range and missile type matches
+			if(
+				item.weapon === "range" &&
+				m_player.weapons.missile !== null &&
+				m_player.weapons.range.missileType !== m_player.weapons.missile.name
+			) {
+				m_player.weapons.missile.equipped = false;
+				m_player.weapons.missile = null;
+			}
+		} else if( item.armor ) {
+			if( m_player.armor[ item.armor ] ) {
+				m_player.armor[ item.armor ].equipped = false;
+			}
+			if( m_player.armor[ item.armor ] === item ) {
+				m_player.armor[ item.armor ] = null;
+				m_player.messages.push( `You unequip ${item.article} ${item.name}.` );
+			} else {
+				item.equipped = true;
+				m_player.armor[ item.armor ] = item;
+				m_player.messages.push( `You equip ${item.article} ${item.name}.` );
+			}
+		} else if( item.lightRadius ) {
+			m_player.lightRadius = item.lightRadius;
+			m_player.lightFade = item.lightFade;
+			m_player.messages.push( `You use ${item.article} ${item.name} to light your way.` );
+			item.quantity -= 1;
+			if( item.quantity === 0 ) {
+				m_player.items.splice( itemIndex, 1 );
+			}
+		} else if( item.thirst ) {
+			m_player.thirst = Math.max( m_player.thirst - item.thirst, 0 );
+			m_player.messages.push( `You drink from ${item.article} ${item.name}.` );
+			item.quantity -= 1;
+			if( item.quantity === 0 ) {
+				m_player.items.splice( itemIndex, 1 );
+			}
+		} else if( item.hunger ) {
+			m_player.hunger = Math.max( m_player.hunger - item.hunger, 0 );
+			m_player.messages.push( `You eat ${item.article} ${item.name}.` );
+			item.quantity -= 1;
+			if( item.quantity === 0 ) {
+				m_player.items.splice( itemIndex, 1 );
+			}
+		}
+		endTurn();
+		run();
+	} else {
+		if( typeof itemIndex === "number" ) {
+			m_player.messages.push( `There is no item at index ${itemIndex}.` );
+		} else {
+			m_player.messages.push( "Use item cancelled." );
+		}
+		run();
+	}
+}
+
+async function dropItem() {
+	if( m_player.items.length === 0 ) {
+		$.setColor( 4 );
+		m_player.messages.push( "You have no items to drop." );
+		run();
+		return;
+	}
+
+	const height = 8;
+	const { x, y } = getMessagePosition( height );
+	$.setPosPx( x + 8, y + 8 );
+	const itemIndex = await promptMessage( `Drop which item (0-${m_player.items.length - 1})` );
+	if( itemIndex !== null && itemIndex < m_player.items.length ) {
+		let item = m_player.items[ itemIndex ];
+
+		// First unequip the item
+		if( item.equipped ) {
+			if( item.weapon && m_player.weapons[ item.weapon ] ) {
+				m_player.weapons[ item.weapon ] = null;
+			} else if( item.armor && m_player.armor[ item.armor ] ) {
+				m_player.armor[ item.armor ] = null;
+			}
+			item.equipped = false;
+		}
+
+		m_player.items.splice( itemIndex, 1 );
+		item.x = player.x;
+		item.y = player.y;
+		m_level.items.push( item );
+		m_player.messages.push( `You drop ${item.article} ${item.name}.` );
+		endTurn();
+	} else {
+		if( typeof itemIndex === "number" ) {
+			m_player.messages.push( `There is no item at index ${itemIndex}.` );
+		} else {
+			m_player.messages.push( "Drop item cancelled." );
+		}
+	}
+	run();
+}
+
+async function rangeAttack() {	
+	if( m_player.weapons.range === null ) {
+		$.setColor( 4 );
+		m_player.messages.push( "You don't have a ranged weapon equipped." );
+		run();
+		return;
+	}
+	if( m_player.weapons.range.missileType && m_player.weapons.missile === null ) {
+		$.setColor( 4 );
+		m_player.messages.push( "You don't have any missiles equipped." );
+		run();
+		return;
+	}
+
+	const direction = ( await promptMessage( "Enter direction (movement key):", true ) ).key;
+	if( direction === "Escape" ) {
+		m_player.messages.push( "Range attack cancelled." );
+		run();
+		return;
+	}
+
+	const MOVEMENT_KEYS = [
+		"w", "a", "s", "d", "q", "e", "c", "z", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", "Home", "PageUp", "PageDown", "End"
+	];
+	if( !MOVEMENT_KEYS.includes( direction ) ) {
+		m_player.messages.push( "Direction is not valid" );
+		run();
+		return;
+	}
+
+	let distance = m_player.weapons.range.distance;
+	if( m_player.weapons.range.missileType ) {
+		distance += m_player.weapons.missile.distance;
+	}
+
+	await fireMissile( m_player.x, m_player.y, direction, distance, m_player );
+	
+	// Reduce missile quantity and remove it from inventory when gone
+	let missileIndex = null;
+	if( m_player.weapons.range.missileType ) {
+		missileIndex = m_player.items.findIndex( item => item === m_player.weapons.missile );
+	} else {
+		missileIndex = m_player.items.findIndex( item => item === m_player.weapons.range );
+	}
+	
+	const missile = m_player.items[ missileIndex ];
+	missile.quantity -= 1;
+	if( missile.quantity === 0 ) {
+		if( m_player.weapons.range.missileType ) {
+			m_player.weapons.missile = null;
+		} else {
+			m_player.weapons.range = null;
+		}
+		m_player.items.splice( missileIndex, 1 );
+	}
+	endTurn();
+	run();
+}
+
+async function fireMissile( x, y, direction, distance, self ) {
+	let dx = 0;
+	let dy = 0;
+	let symbol = "";
+	if( direction === "w" || direction === "ArrowUp" ) {
+		dy = -1;
+		symbol = String.fromCharCode( 24 );
+	} else if( direction === "a" || direction === "ArrowLeft" ) {
+		dx = -1;
+		symbol = String.fromCharCode( 27 );
+	} else if( direction === "s" || direction === "ArrowDown" ) {
+		dy = 1;
+		symbol = String.fromCharCode( 25 );
+	} else if( direction === "d" || direction === "ArrowRight" ) {
+		dx = 1;
+		symbol = String.fromCharCode( 26 );
+	} else if( direction === "q" || direction === "Home" ) {
+		dx = -1;
+		dy = -1;
+		symbol = "\\";
+	} else if ( direction === "e" || direction === "PageUp" ) {
+		dx = 1;
+		dy = -1;
+		symbol = "/";
+	} else if( direction === "c" || direction === "PageDown" ) {
+		dx = 1;
+		dy = 1;
+		symbol = "\\";
+	} else if( direction === "z" || direction === "End" ) {
+		dx = -1;
+		dy = 1;
+		symbol = "/";
+	}
+	const d = Math.sqrt( dx * dx + dy * dy );
+
+	$.clearEvents();
+	let missileName = "";
+	if( self.weapons.range.missileType ) {
+		missileName = self.weapons.missile.name;
+	} else {
+		missileName = self.weapons.range.name;
+	}
+	let isCollided = false;
+	while( distance > 0 && !isCollided ) {
+		distance -= d;
+		x += dx;
+		y += dy;
+		renderScene();
+		$.setPos( x + m_offsetX, y );
+		$.setColor( 15 );
+		$.print( symbol, true );
+		if( TILE_BLOCKING.includes( m_level.map[ y ][ x ] ) ) {
+			isCollided = true;
+		}
+		if( self === m_player ) {
+			const enemyHit = m_level.enemies.find( enemy2 => enemy2.x === x && enemy2.y === y );
+			if( enemyHit ) {
+				isCollided = true;
+				combatStrike( m_player, enemyHit, true, missileName );
+			}
+		} else {
+			if( x === m_player.x && y === m_player.y ) {
+				isCollided = true;
+				combatStrike( self, m_player, true, missileName );
+			}
+		}
+		await new Promise( ( resolve ) => {
+			setTimeout( resolve, 100 );
+		} );
+	}
+	addGameKeys();
+}
+
+function search() {
+	const searches = [
+		[ -1, -1 ], [ 0, -1 ], [ 1, -1 ],
+		[ -1,  0 ],            [ 1,  0 ],
+		[ -1,  1 ], [ 0,  1 ], [ 1,  1 ]
+	];
+	
+	m_player.messages.push( "You search the area..." );
+
+	let hasDiscovery = false;
+
+	// Search 3 areas
+	for( let i = 0; i < 3; i += 1 ) {
+		const search = searches[ Math.floor( Math.random() * searches.length ) ];
+		const tile = m_level.map[ m_player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ];
+		if( tile === TILE_HIDDEN_DOOR ) {
+			m_player.messages.push( "\tand find a hidden door" );
+			hasDiscovery = true;
+			m_level.map[ player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ] = TILE_DOOR;
+		} else if( tile === TILE_HIDDEN_PATH ) {
+			m_player.messages.push( "\tand find a hidden path" );
+			hasDiscovery = true;
+			m_level.map[ m_player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ] = TILE_PATH;
+		} 
+	}
+	if( !hasDiscovery ) {
+		m_player.messages.push( "\tand find nothing." );
+	}
+	endTurn();
+	run();
+}
+
+function endTurn() {
+	m_player.hunger += 0.05;
+	m_player.thirst += 0.15;
+	m_player.lightRadius = Math.max( m_player.lightRadius - m_player.lightFade, 0 );
+
+	// Move enemies
+	for( const enemy of m_level.enemies ) {
+		
+		const lastPosition = { "x": enemy.x, "y": enemy.y };
+
+		// Get possible move directions
+		const possibleMoves = [
+			{ "x": 0, "y": -1 },
+			{ "x": 0, "y": 1 },
+			{ "x": -1, "y": 0 },
+			{ "x": 1, "y": 0 },
+			{ "x": -1, "y": -1 },
+			{ "x": 1, "y": -1 },
+			{ "x": -1, "y": 1 },
+			{ "x": 1, "y": 1 },
+			{ "x": 0, "y": 0 },
+			{ "x": 0, "y": 0 },
+			{ "x": 0, "y": 0 },
+			{ "x": 0, "y": 0 },
+			{ "x": 0, "y": 0 }
+		];
+		const validMoves = [];
+		for( const move of possibleMoves ) {
+			const x = enemy.x + move.x;
+			const y = enemy.y + move.y;
+			const isOccupied = m_level.enemies.find( enemy2 => enemy2.x === x && enemy2.y === y );
+			if(
+				x >= 0 && x < m_level.width &&
+				y >= 0 && y < m_level.height &&
+				TILE_WALKABLE.includes( m_level.map[ y ][ x ] ) &&
+				!isOccupied
+			) {
+				validMoves.push( move );
+			}
+		}
+
+		// Is player in range?
+		const dx = enemy.x - m_player.x;
+		const dy = enemy.y - m_player.y;
+		const d = Math.sqrt( dx * dx + dy * dy );
+		if( d < enemy.vision && hasLineOfSight( enemy.x, enemy.y, m_player.x, m_player.y ) ) {
+
+			// Move enemy towards player
+			const dx = m_player.x - enemy.x;
+			const dy = m_player.y - enemy.y;
+
+			if(
+				validMoves.find( move => move.x === Math.sign( dx ) && move.y === Math.sign( dy ) )
+			) {
+				enemy.x += Math.sign( dx );
+				enemy.y += Math.sign( dy );
+			} else {
+				const move = validMoves[ Math.floor( Math.random() * validMoves.length ) ];
+				enemy.x += move.x;
+				enemy.y += move.y;
+			}
+		} else {
+
+			// Move enemy randomly
+			const move = validMoves[ Math.floor( Math.random() * validMoves.length ) ];
+			enemy.x += move.x;
+			enemy.y += move.y;
+		}
+
+		// Check if enemy hits player
+		if( enemy.x === m_player.x && enemy.y === m_player.y ) {
+			combatStrike( enemy, m_player );
+			enemy.x = lastPosition.x;
+			enemy.y = lastPosition.y;
+
+			// Stop all other enemy movements if player is dead
+			if( m_player.hitPoints === 0 ) {
+				return;
+			}
+		}
+	}
+
+	// Spawn enemies
+	if( Math.random() < END_TURN_ENEMY_SPAWN_CHANCE ) {
+		spawnEnemy();
+	}
+
+	// Advance player level
+	const previousLevel = m_player.level;
+	m_player.level = Math.max(
+		LEVELS.findLastIndex( level => level <= m_player.experience ) + 1, 1
+	);
+	if( previousLevel < m_player.level ) {
+		m_messages.push( `You have advanced to the rank of ${RANKS[ m_player.level - 1 ]}` );
+	}
+
+	// Heal player over time
+	m_player.hitPoints = Math.min(
+		m_player.hitPoints + m_player.maxHitPoints * HEALING_RATE, m_player.maxHitPoints
+	);
+}
+
+function combatStrike( entity, target, isRange, missleName ) {
+	let entityName = entity.name.toLowerCase();
+	let targetName = target.name.toLowerCase();
+	let attack = entity.attack;
+	if( isRange ) {
+		attack = entity.range;
+	}
+	const attackRoll = Math.round( Math.random() * attack );
+	const defenseRoll = Math.round( Math.random() * target.defense );
+	if( attackRoll > defenseRoll ) {
+		const damage = attackRoll - defenseRoll;
+		target.hitPoints -= damage;
+		if( entity === m_player ) {
+			m_player.messages.push( `You hit the ${targetName} for ${damage} damage.` );	
+		} else {
+			if( isRange ) {
+				m_player.messages.push( `You have been hit by a ${missleName} for ${damage} damage.` );
+			} else {
+				m_player.messages.push( `The ${entityName} hits you for ${damage} damage.` );
+			}
+		}
+	} else {
+		if( entity === m_player ) {
+			if( isRange ) {
+				m_player.messages.push( `Your ${missleName} misses the ${targetName}.` );
+			} else {
+				m_player.messages.push( `You attempt to attack the ${targetName} but miss.` );
+			}
+		} else {
+			m_player.messages.push( `The ${entityName} attempts to attack you but misses.` );
+		}
+	}
+
+	if( target.hitPoints <= 0 ) {
+		target.hitPoints = 0;
+		if( target === m_player ) {
+			m_player.messages.push( `You have been killed.` );
+		} else {
+			m_player.messages.push( `The ${targetName} is killed.` );
+			m_player.experience += target.experience;
+		}
+		m_level.enemies = m_level.enemies.filter( e => e !== target );
+	}
+}
+
+function spawnEnemy() {
+	const enemy = getEnemy( m_player.level );
+	const room = m_level.rooms[ Math.floor( Math.random() * m_level.rooms.length ) ];
+	enemy.x = room.x + Math.floor( Math.random() * ( room.w - 2 ) ) + 1;
+	enemy.y = room.y + Math.floor( Math.random() * ( room.h - 2 ) ) + 1;
+
+	// Make sure enemy does not spawn on top of another enemy
+	if( m_level.enemies.find( e => e.x === enemy.x && e.y === enemy.y ) ) {
+		return;
+	}
+
+	// Make sure enemy only spawns in a dark room
+	if( m_litTiles[ `${enemy.y},${enemy.x}` ] ) {
+		return;
+	}
+	m_level.enemies.push( enemy );
+}

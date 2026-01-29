@@ -1,170 +1,169 @@
 "use strict";
 // File: items.js
 
+const ITEM_GOLD = "gold coin";
+const ITEM_TORCH = "torch";
+
+const ITEMS = {
+
+	// Misc
+	"gold": {
+		"name": ITEM_GOLD,
+		"symbol": "*",
+		"cost": 1,
+		"dropValue": 80,
+		"levels": [ 0, 99 ],
+		"color": 14
+	},
+	"torch": {
+		"name": ITEM_TORCH,
+		"symbol": "!",
+		"cost": 3,
+		"dropValue": 30,
+		"levels": [ 0, 99 ],
+		"color": 40,
+		"stackable": true,
+		"plural": "torches",
+		"lightRadius": 3,
+		"lightFade": 0.01
+	},
+	"ration": {
+		"name": "ration",
+		"symbol": "%",
+		"cost": 5,
+		"dropValue": 20,
+		"levels": [ 0, 99 ],
+		"color": 2,
+		"stackable": true,
+		"plural": "rations",
+		"hunger": 50
+	},
+	"water": {
+		"name": "water",
+		"symbol": "~",
+		"cost": 2,
+		"dropValue": 20,
+		"levels": [ 0, 99 ],
+		"color": 9,
+		"stackable": true,
+		"plural": "waters",
+		"article": "a bottle of",
+		"thirst": 50
+	},
+
+	// Weapons
+	"wooden_club": {
+		"name": "wooden club",
+		"symbol": "/",
+		"weapon": "melee",
+		"cost": 10,
+		"attack": 20,
+		"dropValue": 50,
+		"levels": [ 0, 99 ],
+		"color": 42
+	},
+	"iron_mace": {
+		"name": "iron mace",
+		"symbol": "@",
+		"weapon": "melee",
+		"cost": 30,
+		"attack": 3,
+		"dropValue": 10,
+		"levels": [ 0, 99 ],
+		"color": 7,
+		"article": "an"
+	},
+	"iron_sword": {
+		"name": "iron sword",
+		"symbol": "|",
+		"weapon": "melee",
+		"cost": 80,
+		"attack": 4,
+		"dropValue": 5,
+		"levels": [ 0, 99 ],
+		"color": 7,
+		"article": "an"
+	},
+
+	// Ranged Weapons
+	"bow": {
+		"name": "bow",
+		"symbol": ")",
+		"weapon": "range",
+		"missileType": "arrow",
+		"cost": 10,
+		"attack": 2,
+		"dropValue": 35,
+		"levels": [ 0, 99 ],
+		"color": 5,
+		"distance": 5
+	},
+	"dart": {
+		"name": "dart",
+		"symbol": "`",
+		"weapon": "range",
+		"cost": 5,
+		"attack": 3,
+		"dropValue": 35,
+		"levels": [ 0, 99 ],
+		"color": 5,
+		"stackable": true,
+		"article": "a",
+		"distance": 4
+	},
+
+	// Missiles
+	"arrow": {
+		"name": "arrow",
+		"symbol": "-",
+		"weapon": "missile",
+		"cost": 5,
+		"attack": 1,
+		"dropValue": 35,
+		"levels": [ 0, 99 ],
+		"color": 5,
+		"stackable": true,
+		"article": "an",
+		"distance": 1
+	},
+
+	// Armor
+	"cloth_armor": {
+		"name": "cloth armor",
+		"symbol": "&",
+		"armor": "body",
+		"cost": 10,
+		"defense": 15,
+		"dropValue": 50,
+		"levels": [ 0, 99 ],
+		"color": 42
+	},
+	"leather_armor": {
+		"name": "leather armor",
+		"symbol": "&",
+		"armor": "body",
+		"cost": 20,
+		"defense": 2,
+		"dropValue": 15,
+		"levels": [ 0, 99 ],
+		"color": 42
+	},
+	"iron_armor": {
+		"name": "iron armor",
+		"symbol": "&",
+		"armor": "body",
+		"cost": 100,
+		"defense": 5,
+		"dropValue": 10,
+		"levels": [ 0, 99 ],
+		"color": 42,
+		"article": "an"
+	}
+};
+
+const ALL_ITEMS = normalizeItems( ITEMS );
+
 window.g_items = ( function () {
-
-	const ITEM_GOLD = "gold coin";
-	const ITEM_TORCH = "torch";
-
-	const ITEMS = {
-
-		// Misc
-		"gold": {
-			"name": ITEM_GOLD,
-			"symbol": "*",
-			"cost": 1,
-			"dropValue": 80,
-			"levels": [ 0, 99 ],
-			"color": 14
-		},
-		"torch": {
-			"name": ITEM_TORCH,
-			"symbol": "!",
-			"cost": 3,
-			"dropValue": 30,
-			"levels": [ 0, 99 ],
-			"color": 40,
-			"stackable": true,
-			"plural": "torches",
-			"lightRadius": 3,
-			"lightFade": 0.01
-		},
-		"ration": {
-			"name": "ration",
-			"symbol": "%",
-			"cost": 5,
-			"dropValue": 20,
-			"levels": [ 0, 99 ],
-			"color": 2,
-			"stackable": true,
-			"plural": "rations",
-			"hunger": 50
-		},
-		"water": {
-			"name": "water",
-			"symbol": "~",
-			"cost": 2,
-			"dropValue": 20,
-			"levels": [ 0, 99 ],
-			"color": 9,
-			"stackable": true,
-			"plural": "waters",
-			"article": "a bottle of",
-			"thirst": 50
-		},
-
-		// Weapons
-		"wooden_club": {
-			"name": "wooden club",
-			"symbol": "/",
-			"weapon": "melee",
-			"cost": 10,
-			"attack": 20,
-			"dropValue": 50,
-			"levels": [ 0, 99 ],
-			"color": 42
-		},
-		"iron_mace": {
-			"name": "iron mace",
-			"symbol": "@",
-			"weapon": "melee",
-			"cost": 30,
-			"attack": 3,
-			"dropValue": 10,
-			"levels": [ 0, 99 ],
-			"color": 7,
-			"article": "an"
-		},
-		"iron_sword": {
-			"name": "iron sword",
-			"symbol": "|",
-			"weapon": "melee",
-			"cost": 80,
-			"attack": 4,
-			"dropValue": 5,
-			"levels": [ 0, 99 ],
-			"color": 7,
-			"article": "an"
-		},
-
-		// Ranged Weapons
-		"bow": {
-			"name": "bow",
-			"symbol": ")",
-			"weapon": "range",
-			"missileType": "arrow",
-			"cost": 10,
-			"attack": 2,
-			"dropValue": 35,
-			"levels": [ 0, 99 ],
-			"color": 5,
-			"distance": 5
-		},
-		"dart": {
-			"name": "dart",
-			"symbol": "`",
-			"weapon": "range",
-			"cost": 5,
-			"attack": 3,
-			"dropValue": 35,
-			"levels": [ 0, 99 ],
-			"color": 5,
-			"stackable": true,
-			"article": "a",
-			"distance": 4
-		},
-
-		// Missiles
-		"arrow": {
-			"name": "arrow",
-			"symbol": "-",
-			"weapon": "missile",
-			"cost": 5,
-			"attack": 1,
-			"dropValue": 35,
-			"levels": [ 0, 99 ],
-			"color": 5,
-			"stackable": true,
-			"article": "an",
-			"distance": 1
-		},
-
-		// Armor
-		"cloth_armor": {
-			"name": "cloth armor",
-			"symbol": "&",
-			"armor": "body",
-			"cost": 10,
-			"defense": 15,
-			"dropValue": 50,
-			"levels": [ 0, 99 ],
-			"color": 42
-		},
-		"leather_armor": {
-			"name": "leather armor",
-			"symbol": "&",
-			"armor": "body",
-			"cost": 20,
-			"defense": 2,
-			"dropValue": 15,
-			"levels": [ 0, 99 ],
-			"color": 42
-		},
-		"iron_armor": {
-			"name": "iron armor",
-			"symbol": "&",
-			"armor": "body",
-			"cost": 100,
-			"defense": 5,
-			"dropValue": 10,
-			"levels": [ 0, 99 ],
-			"color": 42,
-			"article": "an"
-		}
-	};
-
-	const ALL_ITEMS = normalizeItems( ITEMS );
-
 	return {
 		"getItemDrop": getItemDrop,
 		"getAllItems": getAllItems,
@@ -246,4 +245,3 @@ window.g_items = ( function () {
 	}
 
 } )();
-

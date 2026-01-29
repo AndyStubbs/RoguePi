@@ -18,9 +18,62 @@ window.g_player = ( function () {
 			}
 		}
 
+		const items = [];
+
+		// Give the player some starting items
+		const club = structuredClone( ITEMS.wooden_club );
+		club.quantity = 1;
+		items.push( club );
+		const clothes = structuredClone( ITEMS.cloth_armor );
+		clothes.quantity = 1;
+		items.push( clothes );
+		const torches = structuredClone( ITEMS.torch );
+		torches.quantity = 3;
+		items.push( torches );
+
+		// Give ranged items
+		const bow = structuredClone( ITEMS.bow );
+		bow.quantity = 1;
+		items.push( bow );
+		const arrow = structuredClone( ITEMS.arrow );
+		arrow.quantity = 5;
+		items.push( arrow );
+		const dart = structuredClone( ITEMS.dart );
+		dart.quantity = 5;
+		items.push( dart );
+
 		return {
-			"map": map,
+			"name": "Player 1",
+			"level": 1,
+			"depth": 1,
+			"lastShop": 1,
+			"experience": 0,
+			"gold": 100,
+			"attack": 1,
+			"range": 0,
+			"defense": 1,
+			"hitPoints": 15,
+			"maxHitPoints": 15,
+			"hunger": 0,
+			"thirst": 0,
 			"lightRadius": 3,
+			"lightFade": 0.01,
+			"map": map,
+			"message": [],
+			"items": items,
+			"armor": {
+				"head": null,
+				"body": null,
+				"hands": null,
+				"legs": null,
+				"feet": null,
+				"shield": null
+			},
+			"weapons": {
+				"melee": null,
+				"range": null,
+				"missile": null
+			},
 			"x": 0,
 			"y": 0,
 			"color": 14,

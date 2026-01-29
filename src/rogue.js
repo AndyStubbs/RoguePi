@@ -8,14 +8,11 @@ const m_level = g_dungeonMap.createMap( $.getCols(), $.getRows(), 1 );
 const m_player = g_player.createPlayer();
 m_player.x = m_level.startLocation.x;
 m_player.y = m_level.startLocation.y;
-let m_frame = 1;
 
 addGameKeys();
 render();
 
 function render() {
-	console.log( "FRAME STARTED" );
-	m_frame += 1;
 	$.cls();
 	g_dungeonMap.renderMap( m_level.map );
 	$.setColor( m_player.color );
@@ -82,7 +79,6 @@ function addGameKeys() {
 }
 
 function move( dx, dy ) {
-	console.log( "frame", m_frame );
 	g_player.move( dx, dy, m_player, m_level );
 	render();
 }

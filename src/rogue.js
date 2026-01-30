@@ -5,6 +5,8 @@
 */
 
 const OFFSET_X = 17;
+//const END_TURN_ENEMY_SPAWN_CHANCE = 0.01;
+const END_TURN_ENEMY_SPAWN_CHANCE = 0;
 
 const g_mainScreen = $.screen( "640x350" );
 const g_messageScreen = $.screen( "320x192", null, true );
@@ -15,10 +17,10 @@ $.setScreen( g_mainScreen );
 let m_level;
 let m_player;
 
-startGame();
+startLevel();
 
-function startGame() {
-	m_level = g_dungeonMap.createMap( $.getCols(), $.getRows(), 1 );
+function startLevel() {
+	m_level = g_dungeonMap.createMap( $.getCols()- OFFSET_X, $.getRows(), 1 );
 	m_player = g_player.createPlayer( m_level.width, m_level.height );
 	m_player.x = m_level.startLocation.x;
 	m_player.y = m_level.startLocation.y;
@@ -31,15 +33,47 @@ function render() {
 
 	// Render map
 	const litTiles = getLitTiles();
-	for( const tileIndex in litTiles ) {
-		const tile = litTiles[ tileIndex ];
+	for( const tileId in litTiles ) {
+		const tile = litTiles[ tileId ];
 		m_player.map[ tile.y ][ tile.x ] = m_level.map[ tile.y ][ tile.x ];
 	}
-	g_dungeonMap.renderMap( m_player.map, litTiles );
+	g_dungeonMap.renderMap( m_player.map, litTiles, m_player.depth - 1 );
 
+	// Render Items
+	for( const item of m_level.items ) {
+		const tileId = `${item.x},${item.y}`;
+		if( !litTiles[ tileId ] ) {
+			continue;
+		}
+		$.setColor( item.color );
+		$.setPos( item.x + OFFSET_X, item.y );
+		$.print( item.symbol );
+	}
+
+	// Render exit
+	const exitTileId = `${m_level.exitLocation.x},${m_level.exitLocation.y}`;
+	if( litTiles[ exitTileId ] ) {
+		$.setPos( m_level.exitLocation.x + OFFSET_X, m_level.exitLocation.y );
+		$.setColor( 7 );
+		$.print( TILE_EXIT, true );
+	}
+
+	// Render enemies
+	for( const enemy of m_level.enemies ) {
+		const tileId = `${enemy.x},${enemy.y}`;
+		if( !litTiles[ tileId ] ) {
+			continue;
+		}
+		$.setColor( enemy.color );
+		$.setPos( enemy.x + OFFSET_X, enemy.y );
+		$.print( enemy.symbol );
+	}
+	
+	
 	// Render Player
+	$.cls( ( OFFSET_X + m_player.x ) * 8, m_player.y * 8, 8, 8 );
 	$.setColor( m_player.color );
-	$.setPos( m_player.x, m_player.y );
+	$.setPos( OFFSET_X + m_player.x, m_player.y );
 	$.print( m_player.symbol, true );
 
 	// Render Stats
@@ -66,7 +100,8 @@ function render() {
 		printMessage( "You decend lower into the dungeon." );
 		$.clearEvents();
 		setTimeout( () => {
-			renderScene();
+			$.cls( OFFSET_X * 8, 0, $.width(), $.height() );
+			g_dungeonMap.renderMap( m_player.map, litTiles, m_player.depth - 1 );
 			showLevelClearedAnimation();
 		}, 1000 );
 	}
@@ -102,7 +137,7 @@ function getLitTiles() {
 	}
 
 	// Player always sees their own position
-	const playerKey = `${py},${px}`;
+	const playerKey = `${px},${py}`;
 	litTiles[ playerKey ] = { "x": px, "y": py };
 
 	// BFS queue: [x, y, distance]
@@ -124,7 +159,7 @@ function getLitTiles() {
 		for( const [ dx, dy ] of directions ) {
 			const nx = x + dx;
 			const ny = y + dy;
-			const nKey = `${ny},${nx}`;
+			const nKey = `${nx},${ny}`;
 
 			// Skip if already visited
 			if( visited[ nKey ] ) {
@@ -319,7 +354,9 @@ function addGameKeys() {
 
 function move( dx, dy ) {
 	g_player.move( dx, dy, m_player, m_level );
+	pickupItems();
 	render();
+	endTurn();
 }
 
 function renderStats() {
@@ -327,7 +364,7 @@ function renderStats() {
 	// Compute attack
 	m_player.attack = m_player.level;
 	if( m_player.weapons.melee ) {
-		m_player.attack += player.weapons.melee.attack;
+		m_player.attack += m_player.weapons.melee.attack;
 	}
 	m_player.range = 0;
 	if( m_player.weapons.range ) {
@@ -416,6 +453,104 @@ function printStat( title, val, c1 = 14, c2 = 7 ) {
 	$.print( val );
 }
 
+function pickupItems() {
+	const itemsToRemove = [];
+	for( const item of m_level.items ) {
+		if( item.x === m_player.x && item.y === m_player.y ) {
+			let isAdded = pickupItem( item );
+			if( isAdded ) {
+				itemsToRemove.push( item );
+			}
+
+			// Print the pickup message
+			let pickupMsg = "";
+			if( item.quantity === 1 ) {
+				pickupMsg = `You have found ${item.article} ${item.name} `;
+			} else {
+				pickupMsg = `You have found ${item.quantity} ${item.plural} `;
+			}
+			if( isAdded ) {
+				pickupMsg += "and have added it to your inventory.";
+			} else {
+				let article = "it";
+				if( item.quantity > 1 ) {
+					article = "them";
+				}
+				pickupMsg += `but you cannot pick ${article} up because you are holding too ` +
+					`many items.`;
+			}
+
+			m_player.messages.push( pickupMsg );
+		}
+	}
+	m_level.items = m_level.items.filter( item => !itemsToRemove.includes( item ) );
+}
+
+function pickupItem( item ) {
+	let isAdded = false;
+
+	// If item is gold add to player gold
+	if( item.name === ITEM_GOLD ) {
+		m_player.gold += item.quantity;
+		isAdded = true;
+	}
+
+	// For stackable items then they can be added to the quantity of items found.
+	else if( item.stackable ) {
+		for( const playerItem of m_player.items ) {
+			if( playerItem.name === item.name ) {
+				playerItem.quantity += item.quantity;
+				isAdded = true;
+				break;
+			}
+		}
+	}
+
+	// Add item to players inventory
+	if( !isAdded ) {
+		if( m_player.items.length < 10 ) {
+			m_player.items.push( item );
+			isAdded = true;
+		}
+	}
+
+	return isAdded;
+}
+
+function getMessagePosition( height ) {
+	const x = OFFSET_X * 4 + Math.floor( ( $.width() - g_messageScreen.width() ) / 2 );
+	let y = Math.floor( ( $.height() - height ) / 2 );
+	let py = m_player.y * 8;
+	if( py >= y - 16 && py < y - 16 + height + 24 ) {
+		y = py - height - 16;
+	}
+	return { x, y };
+}
+
+async function promptMessage( msg, isImmediate = false ) {
+	$.clearEvents();
+	const height = 8;
+	const { x, y } = getMessagePosition( height );
+	drawMessageBorder( x, y, height );
+	$.setPosPx( x, y );
+	$.setColor( 7 );
+	$.print( msg, true );
+	if( isImmediate ) {
+		const itemIndex = await new Promise( resolve => {
+			setTimeout( () => {
+				$.onkey( "any", "down", ( key ) => {
+					resolve( key );
+				}, false, true );
+			}, 0 );
+		} );
+		addGameKeys();
+		return itemIndex
+	}
+	const itemIndex = await $.input( ": ", null, null, true, true, false, 1 );
+	addGameKeys();
+	return itemIndex;
+}
+
 function printMessage( msg ) {
 	g_messageScreen.cls();
 
@@ -461,7 +596,7 @@ async function useItem( itemIndex ) {
 			if(
 				item.weapon === "missile" &&
 				m_player.weapons.range &&
-				m_player.weapons.range.missileType !== item.weapon
+				m_player.weapons.range.missileType !== item.missileType
 			) {
 				m_player.messages.push(
 					`You cannot equip ${itemDescription} because it is not compatible your ` +
@@ -564,8 +699,8 @@ async function dropItem() {
 		}
 
 		m_player.items.splice( itemIndex, 1 );
-		item.x = player.x;
-		item.y = player.y;
+		item.x = m_player.x;
+		item.y = m_player.y;
 		m_level.items.push( item );
 		m_player.messages.push( `You drop ${item.article} ${item.name}.` );
 		endTurn();
@@ -686,7 +821,7 @@ async function fireMissile( x, y, direction, distance, self ) {
 		distance -= d;
 		x += dx;
 		y += dy;
-		renderScene();
+		render();
 		$.setPos( x + OFFSET_X, y );
 		$.setColor( 15 );
 		$.print( symbol, true );
@@ -730,7 +865,7 @@ function search() {
 		if( tile === TILE_HIDDEN_DOOR ) {
 			m_player.messages.push( "\tand find a hidden door" );
 			hasDiscovery = true;
-			m_level.map[ player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ] = TILE_DOOR;
+			m_level.map[ m_player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ] = TILE_DOOR;
 		} else if( tile === TILE_HIDDEN_PATH ) {
 			m_player.messages.push( "\tand find a hidden path" );
 			hasDiscovery = true;
@@ -896,4 +1031,66 @@ function spawnEnemy() {
 		return;
 	}
 	m_level.enemies.push( enemy );
+}
+
+async function showLevelClearedAnimation() {
+	let x = OFFSET_X * 8;
+	let y = 0;
+	let width = $.width() - x;
+	let height = $.height();
+	while( width > 0 && height > 0 ) {
+
+		// Erase outer rect
+		$.setColor( 0 );
+		$.rect( x, y, width, height );
+		width -= 2;
+		height -= 2;
+		x += 1;
+		y += 1;
+
+		// Draw inner rect
+		$.setColor( 7 );
+		$.rect( x, y, width, height );
+
+		// Wait before next frame
+		await new Promise( resolve => setTimeout( resolve, 8 ) );
+	}
+
+	m_player.depth += 1;
+
+	// Randomly generate a shop
+	if( m_player.depth > m_player.lastShop + 2 ) {
+		if( Math.random() < SHOP_CHANCE ) {
+			m_player.lastShop = m_player.depth;
+			runShop();
+			return;
+		}
+	}
+	startLevel();
+}
+
+async function showGameOverAnimation() {
+	let x = 0;
+	let y = 0;
+	let width = $.width();
+	let height = $.height();
+	while( width > 0 && height > 0 ) {
+
+		// Erase outer rect
+		$.setColor( 0 );
+		$.rect( x, y, width, height );
+		width -= 2;
+		height -= 2;
+		x += 1;
+		y += 1;
+
+		// Draw inner rect
+		$.setColor( 7 );
+		$.rect( x, y, width, height );
+
+		// Wait before next frame
+		await new Promise( resolve => setTimeout( resolve, 8 ) );
+	}
+	$.cls();
+	$.print( "Game Over" );
 }

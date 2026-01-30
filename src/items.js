@@ -115,6 +115,7 @@ const ITEMS = {
 	// Missiles
 	"arrow": {
 		"name": "arrow",
+		"missileType": "arrow",
 		"symbol": "-",
 		"weapon": "missile",
 		"cost": 5,

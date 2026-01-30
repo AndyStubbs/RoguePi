@@ -6,7 +6,17 @@ window.g_dungeonMap = ( function () {
 	const HIDDEN_PATH_CHANCE = 0.0025;
 	const ROOM_ITEM_DROP_CHANCE = 0.9;
 	const ROOM_BEND_CHANCE = 0.5;
-	const ENEMY_SPAWN_CHANCE = 0.65;
+	//const ENEMY_SPAWN_CHANCE = 0.65;
+	const ENEMY_SPAWN_CHANCE = 0;
+
+	// Map Colors
+	const MAP_COLORS = [];
+	const level1 = {};
+	level1[ TILE_FLOOR ] = [ 2, 191 ];
+	level1[ TILE_PATH ] = [ 7, 8 ]
+	level1.WALLS = [ 6, 186 ];
+	MAP_COLORS.push( level1 );
+
 	let m_count = 1;
 	return {
 		"createMap": createMap,
@@ -35,9 +45,6 @@ window.g_dungeonMap = ( function () {
 
 		hideRandomPaths( map, width, height );
 
-		const wallColors = [ 6, 186 ];
-		const floorColors = [ 7, 8 ];
-
 		const itemData = generateItems( rooms, level );
 		const startData = chooseStartLocation( rooms, itemData.itemLookup );
 		const exitData = chooseExitLocation( rooms, startData.startingRoom, itemData.itemLookup );
@@ -50,8 +57,6 @@ window.g_dungeonMap = ( function () {
 			"rooms": rooms,
 			"width": width,
 			"height": height,
-			"wallColors": wallColors,
-			"floorColors": floorColors,
 			"items": itemData.items,
 			"enemies": enemies,
 			"startLocation": startData.startLocation,
@@ -484,16 +489,25 @@ window.g_dungeonMap = ( function () {
 		return getRoom( rooms, x, y ) !== null;
 	}
 
-	function renderMap( map, litTiles ) {
-		$.setColor( 8 );
+	function renderMap( map, litTiles, depth ) {
+		const colors = MAP_COLORS[ depth ];
 		for( let y = 0; y < map.length; y += 1 ) {
 			for( let x = 0; x < map[ y ].length; x += 1 ) {
 				const tile = map[ y ][ x ];
-				$.setPos( x, y );
-				if( litTiles[ `${y},${x}` ] ) {
-					$.setColor( 7 );
+				if( tile === " " ) {
+					continue;
+				}
+				$.setPos( OFFSET_X + x, y );
+				let colorSet;
+				if( colors[ tile ] ) {
+					colorSet = colors[ tile ];
 				} else {
-					$.setColor( 8 );
+					colorSet = colors[ "WALLS" ];
+				}
+				if( litTiles[ `${x},${y}` ] ) {
+					$.setColor( colorSet[ 0 ] );
+				} else {
+					$.setColor( colorSet[ 1 ] );
 				}
 				$.print( tile, true );
 			}

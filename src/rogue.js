@@ -10,20 +10,23 @@ const END_TURN_ENEMY_SPAWN_CHANCE = 0;
 
 const g_mainScreen = $.screen( "640x350" );
 const g_messageScreen = $.screen( "320x192", null, true );
+const WIDTH = $.getCols() - OFFSET_X;
+const HEIGHT = $.getRows();
+
 g_mainScreen.setFont( 2 );
 g_messageScreen.setFont( 2 );
 $.setScreen( g_mainScreen );
 
-let m_level;
-let m_player;
+let g_level;
 
+g_player.fn.init( WIDTH, HEIGHT );
 startLevel();
 
 function startLevel() {
-	m_level = g_dungeonMap.createMap( $.getCols()- OFFSET_X, $.getRows(), 1 );
-	m_player = g_player.createPlayer( m_level.width, m_level.height );
-	m_player.x = m_level.startLocation.x;
-	m_player.y = m_level.startLocation.y;
+	g_level = g_dungeonMap.createMap( WIDTH, HEIGHT, g_player.depth );
+	g_player.x = g_level.startLocation.x;
+	g_player.y = g_level.startLocation.y;
+
 	addGameKeys();
 	render();
 }
@@ -35,12 +38,12 @@ function render() {
 	const litTiles = getLitTiles();
 	for( const tileId in litTiles ) {
 		const tile = litTiles[ tileId ];
-		m_player.map[ tile.y ][ tile.x ] = m_level.map[ tile.y ][ tile.x ];
+		g_player.map[ tile.y ][ tile.x ] = g_level.map[ tile.y ][ tile.x ];
 	}
-	g_dungeonMap.renderMap( m_player.map, litTiles, m_player.depth - 1 );
+	g_dungeonMap.renderMap( g_player.map, litTiles, g_player.depth - 1 );
 
 	// Render Items
-	for( const item of m_level.items ) {
+	for( const item of g_level.items ) {
 		const tileId = `${item.x},${item.y}`;
 		if( !litTiles[ tileId ] ) {
 			continue;
@@ -51,15 +54,15 @@ function render() {
 	}
 
 	// Render exit
-	const exitTileId = `${m_level.exitLocation.x},${m_level.exitLocation.y}`;
+	const exitTileId = `${g_level.exitLocation.x},${g_level.exitLocation.y}`;
 	if( litTiles[ exitTileId ] ) {
-		$.setPos( m_level.exitLocation.x + OFFSET_X, m_level.exitLocation.y );
+		$.setPos( g_level.exitLocation.x + OFFSET_X, g_level.exitLocation.y );
 		$.setColor( 7 );
 		$.print( TILE_EXIT, true );
 	}
 
 	// Render enemies
-	for( const enemy of m_level.enemies ) {
+	for( const enemy of g_level.enemies ) {
 		const tileId = `${enemy.x},${enemy.y}`;
 		if( !litTiles[ tileId ] ) {
 			continue;
@@ -69,25 +72,24 @@ function render() {
 		$.print( enemy.symbol );
 	}
 	
-	
 	// Render Player
-	$.cls( ( OFFSET_X + m_player.x ) * 8, m_player.y * 8, 8, 8 );
-	$.setColor( m_player.color );
-	$.setPos( OFFSET_X + m_player.x, m_player.y );
-	$.print( m_player.symbol, true );
+	$.cls( ( OFFSET_X + g_player.x ) * 8, g_player.y * 8, 8, 8 );
+	$.setColor( g_player.color );
+	$.setPos( OFFSET_X + g_player.x, g_player.y );
+	$.print( g_player.symbol, true );
 
 	// Render Stats
 	renderStats();
 
 	// Render Messages
-	if( m_player.messages.length > 0 ) {
-		let message = m_player.messages.join( "\n" );
+	if( g_player.messages.length > 0 ) {
+		let message = g_player.messages.join( "\n" );
 		printMessage( message );
 	}
-	m_player.messages = [];
+	g_player.messages = [];
 
 	// Check player game over
-	if( m_player.hitPoints === 0 ) {
+	if( g_player.hitPoints === 0 ) {
 		$.clearEvents();
 		setTimeout( () => {
 			showGameOverAnimation();
@@ -96,12 +98,12 @@ function render() {
 	}
 
 	// Check if player has found the exit
-	if( m_player.x === m_level.exitLocation.x && m_player.y === m_level.exitLocation.y ) {
+	if( g_player.x === g_level.exitLocation.x && g_player.y === g_level.exitLocation.y ) {
 		printMessage( "You decend lower into the dungeon." );
 		$.clearEvents();
 		setTimeout( () => {
 			$.cls( OFFSET_X * 8, 0, $.width(), $.height() );
-			g_dungeonMap.renderMap( m_player.map, litTiles, m_player.depth - 1 );
+			g_dungeonMap.renderMap( g_player.map, litTiles, g_player.depth - 1 );
 			showLevelClearedAnimation();
 		}, 1000 );
 	}
@@ -112,10 +114,10 @@ function getLitTiles() {
 	// Clear previous lit tiles
 	const litTiles = {};
 
-	const radius = Math.ceil( m_player.lightRadius );
-	const px = m_player.x;
-	const py = m_player.y;
-	const playerTile = m_level.map[ py ][ px ];
+	const radius = Math.ceil( g_player.lightRadius );
+	const px = g_player.x;
+	const py = g_player.y;
+	const playerTile = g_level.map[ py ][ px ];
 
 	// Determine if we're in a path context (on path or door adjacent to path)
 	let isOnPath = playerTile === TILE_PATH;
@@ -126,8 +128,8 @@ function getLitTiles() {
 		for( const [ dx, dy ] of dirs ) {
 			const ax = px + dx;
 			const ay = py + dy;
-			if( ax >= 0 && ax < m_level.width && ay >= 0 && ay < m_level.height ) {
-				const adjTile = m_level.map[ ay ][ ax ];
+			if( ax >= 0 && ax < g_level.width && ay >= 0 && ay < g_level.height ) {
+				const adjTile = g_level.map[ ay ][ ax ];
 				if( adjTile === TILE_PATH ) {
 					isOnPath = true;
 					break;
@@ -167,7 +169,7 @@ function getLitTiles() {
 			}
 
 			// Check bounds
-			if( nx < 0 || nx >= m_level.width || ny < 0 || ny >= m_level.height ) {
+			if( nx < 0 || nx >= g_level.width || ny < 0 || ny >= g_level.height ) {
 				continue;
 			}
 
@@ -181,7 +183,7 @@ function getLitTiles() {
 				continue;
 			}
 
-			const tile = m_level.map[ ny ][ nx ];
+			const tile = g_level.map[ ny ][ nx ];
 
 			// Empty spaces always block vision
 			if( tile === TILE_BLANK ) {
@@ -201,8 +203,8 @@ function getLitTiles() {
 			// For paths: prevent jumping around corners
 			// When moving diagonally, both cardinal directions must be walkable
 			if( isOnPath && dx !== 0 && dy !== 0 ) {
-				const card1 = m_level.map[ y ][ nx ];
-				const card2 = m_level.map[ ny ][ x ];
+				const card1 = g_level.map[ y ][ nx ];
+				const card2 = g_level.map[ ny ][ x ];
 
 				// Can't see diagonally if either cardinal neighbor blocks vision (walls, doors, or empty spaces)
 				if( TILE_BLOCKING.includes( card1 ) || TILE_BLOCKING.includes( card2 ) || 
@@ -280,7 +282,7 @@ function hasLineOfSight( x1, y1, x2, y2 ) {
 		// Check if current tile blocks vision (walls/doors/empty spaces block line of sight)
 		// We check tiles along the path, but not the start position
 		if( !( x === x1 && y === y1 ) ) {
-			const tile = m_level.map[ y ][ x ];
+			const tile = g_level.map[ y ][ x ];
 
 			// Vision blocked by walls, doors, or empty spaces
 			if( TILE_BLOCKING.includes( tile ) || tile === TILE_BLANK ) {
@@ -353,7 +355,7 @@ function addGameKeys() {
 }
 
 function move( dx, dy ) {
-	g_player.move( dx, dy, m_player, m_level );
+	g_player.fn.move( dx, dy, g_level );
 	pickupItems();
 	render();
 	endTurn();
@@ -362,57 +364,57 @@ function move( dx, dy ) {
 function renderStats() {
 	
 	// Compute attack
-	m_player.attack = m_player.level;
-	if( m_player.weapons.melee ) {
-		m_player.attack += m_player.weapons.melee.attack;
+	g_player.attack = g_player.level;
+	if( g_player.weapons.melee ) {
+		g_player.attack += g_player.weapons.melee.attack;
 	}
-	m_player.range = 0;
-	if( m_player.weapons.range ) {
+	g_player.range = 0;
+	if( g_player.weapons.range ) {
 
 		// Add attack value of missile
-		if( m_player.weapons.missile ) {
-			m_player.range += m_player.level + m_player.weapons.range.attack +
-				m_player.weapons.missile.attack;
+		if( g_player.weapons.missile ) {
+			g_player.range += g_player.level + g_player.weapons.range.attack +
+				g_player.weapons.missile.attack;
 		} else {
-			m_player.range += m_player.level + m_player.weapons.range.attack;
+			g_player.range += g_player.level + g_player.weapons.range.attack;
 		}
 	}
 
 	// Compute Defense
-	m_player.defense = m_player.level;
-	for( const itemId in m_player.armor ) {
-		const item = m_player.armor[ itemId ];
+	g_player.defense = g_player.level;
+	for( const itemId in g_player.armor ) {
+		const item = g_player.armor[ itemId ];
 		if( item ) {
-			m_player.defense += item.defense;
+			g_player.defense += item.defense;
 		}
 	}
 	
 	$.setPos( 0, 0 );
 	$.setColor( 8 );
 	$.print();
-	printTitle( "Depth " + m_player.depth );
+	printTitle( "Depth " + g_player.depth );
 	$.print();
 	$.setColor( 14 );
 	$.print();
-	printTitle( m_player.name );
+	printTitle( g_player.name );
 	$.print();
 	$.setColor( 3 );
-	printStat( "RNK", m_player.rank );
-	printStat( "EXP", m_player.experience );
-	printStat( "GLD", m_player.gold, 90 );
-	printStat( "ATT", m_player.attack, 2 );
-	printStat( "RNG", m_player.range, 2 );
-	printStat( "DEF", m_player.defense, 2 );
-	printStat( "HIT", Math.round( m_player.hitPoints ), 3 );
-	printStat( "HUN", Math.round( m_player.hunger ), 3 );
-	printStat( "THR", Math.round( m_player.thirst ), 3 );
+	printStat( "RNK", g_player.rank );
+	printStat( "EXP", g_player.experience );
+	printStat( "GLD", g_player.gold, 90 );
+	printStat( "ATT", g_player.attack, 2 );
+	printStat( "RNG", g_player.range, 2 );
+	printStat( "DEF", g_player.defense, 2 );
+	printStat( "HIT", Math.round( g_player.hitPoints ), 3 );
+	printStat( "HUN", Math.round( g_player.hunger ), 3 );
+	printStat( "THR", Math.round( g_player.thirst ), 3 );
 
 	$.print( "\n" );
 	$.setColor( 10 );
 	printTitle( "Items" );
 	$.print();
-	for( let i = 0; i < m_player.items.length; i += 1 ) {
-		const item = m_player.items[ i ];
+	for( let i = 0; i < g_player.items.length; i += 1 ) {
+		const item = g_player.items[ i ];
 		let itemText = g_util.properName( item.name );
 		if( item.quantity > 1 ) {
 			itemText += ` (${item.quantity})`;
@@ -455,8 +457,8 @@ function printStat( title, val, c1 = 14, c2 = 7 ) {
 
 function pickupItems() {
 	const itemsToRemove = [];
-	for( const item of m_level.items ) {
-		if( item.x === m_player.x && item.y === m_player.y ) {
+	for( const item of g_level.items ) {
+		if( item.x === g_player.x && item.y === g_player.y ) {
 			let isAdded = pickupItem( item );
 			if( isAdded ) {
 				itemsToRemove.push( item );
@@ -480,10 +482,10 @@ function pickupItems() {
 					`many items.`;
 			}
 
-			m_player.messages.push( pickupMsg );
+			g_player.messages.push( pickupMsg );
 		}
 	}
-	m_level.items = m_level.items.filter( item => !itemsToRemove.includes( item ) );
+	g_level.items = g_level.items.filter( item => !itemsToRemove.includes( item ) );
 }
 
 function pickupItem( item ) {
@@ -491,13 +493,13 @@ function pickupItem( item ) {
 
 	// If item is gold add to player gold
 	if( item.name === ITEM_GOLD ) {
-		m_player.gold += item.quantity;
+		g_player.gold += item.quantity;
 		isAdded = true;
 	}
 
 	// For stackable items then they can be added to the quantity of items found.
 	else if( item.stackable ) {
-		for( const playerItem of m_player.items ) {
+		for( const playerItem of g_player.items ) {
 			if( playerItem.name === item.name ) {
 				playerItem.quantity += item.quantity;
 				isAdded = true;
@@ -508,8 +510,8 @@ function pickupItem( item ) {
 
 	// Add item to players inventory
 	if( !isAdded ) {
-		if( m_player.items.length < 10 ) {
-			m_player.items.push( item );
+		if( g_player.items.length < 10 ) {
+			g_player.items.push( item );
 			isAdded = true;
 		}
 	}
@@ -520,7 +522,7 @@ function pickupItem( item ) {
 function getMessagePosition( height ) {
 	const x = OFFSET_X * 4 + Math.floor( ( $.width() - g_messageScreen.width() ) / 2 );
 	let y = Math.floor( ( $.height() - height ) / 2 );
-	let py = m_player.y * 8;
+	let py = g_player.y * 8;
 	if( py >= y - 16 && py < y - 16 + height + 24 ) {
 		y = py - height - 16;
 	}
@@ -572,19 +574,19 @@ function drawMessageBorder( x, y, height ) {
 }
 
 async function useItem( itemIndex ) {
-	if( m_player.items.length === 0 ) {
+	if( g_player.items.length === 0 ) {
 		$.setColor( 4 );
-		m_player.messages.push( "You have no items to use." );
+		g_player.messages.push( "You have no items to use." );
 		render();
 		return;
 	}
 
 	if( itemIndex === null ) {
-		itemIndex = await promptMessage( `Use which item (0-${m_player.items.length - 1})` );
+		itemIndex = await promptMessage( `Use which item (0-${g_player.items.length - 1})` );
 	}
 	
-	if( itemIndex !== null && itemIndex < m_player.items.length ) {
-		let item = m_player.items[ itemIndex ];
+	if( itemIndex !== null && itemIndex < g_player.items.length ) {
+		let item = g_player.items[ itemIndex ];
 		if( item.weapon ) {
 
 			let itemDescription = `${item.article} ${item.name}`;
@@ -595,88 +597,88 @@ async function useItem( itemIndex ) {
 			// Make sure you cannot equip a non-compatible missile type
 			if(
 				item.weapon === "missile" &&
-				m_player.weapons.range &&
-				m_player.weapons.range.missileType !== item.missileType
+				g_player.weapons.range &&
+				g_player.weapons.range.missileType !== item.missileType
 			) {
-				m_player.messages.push(
+				g_player.messages.push(
 					`You cannot equip ${itemDescription} because it is not compatible your ` +
 					`ranged weapon.`
 				);
 				render();
 				return;
 			}
-			if( m_player.weapons[ item.weapon ] ) {
-				m_player.weapons[ item.weapon ].equipped = false;
+			if( g_player.weapons[ item.weapon ] ) {
+				g_player.weapons[ item.weapon ].equipped = false;
 			}
-			if( m_player.weapons[ item.weapon ] === item ) {
-				m_player.weapons[ item.weapon ] = null;
-				m_player.messages.push( `You unequip ${itemDescription}.` );
+			if( g_player.weapons[ item.weapon ] === item ) {
+				g_player.weapons[ item.weapon ] = null;
+				g_player.messages.push( `You unequip ${itemDescription}.` );
 			} else {
 				item.equipped = true;
-				m_player.weapons[ item.weapon ] = item;
-				m_player.messages.push( `You equip ${itemDescription}.` );
+				g_player.weapons[ item.weapon ] = item;
+				g_player.messages.push( `You equip ${itemDescription}.` );
 			}
 
 			// Make sure range and missile type matches
 			if(
 				item.weapon === "range" &&
-				m_player.weapons.missile !== null &&
-				m_player.weapons.range.missileType !== m_player.weapons.missile.name
+				g_player.weapons.missile !== null &&
+				g_player.weapons.range.missileType !== g_player.weapons.missile.name
 			) {
-				m_player.weapons.missile.equipped = false;
-				m_player.weapons.missile = null;
+				g_player.weapons.missile.equipped = false;
+				g_player.weapons.missile = null;
 			}
 		} else if( item.armor ) {
-			if( m_player.armor[ item.armor ] ) {
-				m_player.armor[ item.armor ].equipped = false;
+			if( g_player.armor[ item.armor ] ) {
+				g_player.armor[ item.armor ].equipped = false;
 			}
-			if( m_player.armor[ item.armor ] === item ) {
-				m_player.armor[ item.armor ] = null;
-				m_player.messages.push( `You unequip ${item.article} ${item.name}.` );
+			if( g_player.armor[ item.armor ] === item ) {
+				g_player.armor[ item.armor ] = null;
+				g_player.messages.push( `You unequip ${item.article} ${item.name}.` );
 			} else {
 				item.equipped = true;
-				m_player.armor[ item.armor ] = item;
-				m_player.messages.push( `You equip ${item.article} ${item.name}.` );
+				g_player.armor[ item.armor ] = item;
+				g_player.messages.push( `You equip ${item.article} ${item.name}.` );
 			}
 		} else if( item.lightRadius ) {
-			m_player.lightRadius = item.lightRadius;
-			m_player.lightFade = item.lightFade;
-			m_player.messages.push( `You use ${item.article} ${item.name} to light your way.` );
+			g_player.lightRadius = item.lightRadius;
+			g_player.lightFade = item.lightFade;
+			g_player.messages.push( `You use ${item.article} ${item.name} to light your way.` );
 			item.quantity -= 1;
 			if( item.quantity === 0 ) {
-				m_player.items.splice( itemIndex, 1 );
+				g_player.items.splice( itemIndex, 1 );
 			}
 		} else if( item.thirst ) {
-			m_player.thirst = Math.max( m_player.thirst - item.thirst, 0 );
-			m_player.messages.push( `You drink from ${item.article} ${item.name}.` );
+			g_player.thirst = Math.max( g_player.thirst - item.thirst, 0 );
+			g_player.messages.push( `You drink from ${item.article} ${item.name}.` );
 			item.quantity -= 1;
 			if( item.quantity === 0 ) {
-				m_player.items.splice( itemIndex, 1 );
+				g_player.items.splice( itemIndex, 1 );
 			}
 		} else if( item.hunger ) {
-			m_player.hunger = Math.max( m_player.hunger - item.hunger, 0 );
-			m_player.messages.push( `You eat ${item.article} ${item.name}.` );
+			g_player.hunger = Math.max( g_player.hunger - item.hunger, 0 );
+			g_player.messages.push( `You eat ${item.article} ${item.name}.` );
 			item.quantity -= 1;
 			if( item.quantity === 0 ) {
-				m_player.items.splice( itemIndex, 1 );
+				g_player.items.splice( itemIndex, 1 );
 			}
 		}
 		endTurn();
 		render();
 	} else {
 		if( typeof itemIndex === "number" ) {
-			m_player.messages.push( `There is no item at index ${itemIndex}.` );
+			g_player.messages.push( `There is no item at index ${itemIndex}.` );
 		} else {
-			m_player.messages.push( "Use item cancelled." );
+			g_player.messages.push( "Use item cancelled." );
 		}
 		render();
 	}
 }
 
 async function dropItem() {
-	if( m_player.items.length === 0 ) {
+	if( g_player.items.length === 0 ) {
 		$.setColor( 4 );
-		m_player.messages.push( "You have no items to drop." );
+		g_player.messages.push( "You have no items to drop." );
 		render();
 		return;
 	}
@@ -684,53 +686,53 @@ async function dropItem() {
 	const height = 8;
 	const { x, y } = getMessagePosition( height );
 	$.setPosPx( x + 8, y + 8 );
-	const itemIndex = await promptMessage( `Drop which item (0-${m_player.items.length - 1})` );
-	if( itemIndex !== null && itemIndex < m_player.items.length ) {
-		let item = m_player.items[ itemIndex ];
+	const itemIndex = await promptMessage( `Drop which item (0-${g_player.items.length - 1})` );
+	if( itemIndex !== null && itemIndex < g_player.items.length ) {
+		let item = g_player.items[ itemIndex ];
 
 		// First unequip the item
 		if( item.equipped ) {
-			if( item.weapon && m_player.weapons[ item.weapon ] ) {
-				m_player.weapons[ item.weapon ] = null;
-			} else if( item.armor && m_player.armor[ item.armor ] ) {
-				m_player.armor[ item.armor ] = null;
+			if( item.weapon && g_player.weapons[ item.weapon ] ) {
+				g_player.weapons[ item.weapon ] = null;
+			} else if( item.armor && g_player.armor[ item.armor ] ) {
+				g_player.armor[ item.armor ] = null;
 			}
 			item.equipped = false;
 		}
 
-		m_player.items.splice( itemIndex, 1 );
-		item.x = m_player.x;
-		item.y = m_player.y;
-		m_level.items.push( item );
-		m_player.messages.push( `You drop ${item.article} ${item.name}.` );
+		g_player.items.splice( itemIndex, 1 );
+		item.x = g_player.x;
+		item.y = g_player.y;
+		g_level.items.push( item );
+		g_player.messages.push( `You drop ${item.article} ${item.name}.` );
 		endTurn();
 	} else {
 		if( typeof itemIndex === "number" ) {
-			m_player.messages.push( `There is no item at index ${itemIndex}.` );
+			g_player.messages.push( `There is no item at index ${itemIndex}.` );
 		} else {
-			m_player.messages.push( "Drop item cancelled." );
+			g_player.messages.push( "Drop item cancelled." );
 		}
 	}
 	render();
 }
 
 async function rangeAttack() {	
-	if( m_player.weapons.range === null ) {
+	if( g_player.weapons.range === null ) {
 		$.setColor( 4 );
-		m_player.messages.push( "You don't have a ranged weapon equipped." );
+		g_player.messages.push( "You don't have a ranged weapon equipped." );
 		render();
 		return;
 	}
-	if( m_player.weapons.range.missileType && m_player.weapons.missile === null ) {
+	if( g_player.weapons.range.missileType && g_player.weapons.missile === null ) {
 		$.setColor( 4 );
-		m_player.messages.push( "You don't have any missiles equipped." );
+		g_player.messages.push( "You don't have any missiles equipped." );
 		render();
 		return;
 	}
 
 	const direction = ( await promptMessage( "Enter direction (movement key):", true ) ).key;
 	if( direction === "Escape" ) {
-		m_player.messages.push( "Range attack cancelled." );
+		g_player.messages.push( "Range attack cancelled." );
 		render();
 		return;
 	}
@@ -740,35 +742,35 @@ async function rangeAttack() {
 		"Home", "PageUp", "PageDown", "End"
 	];
 	if( !MOVEMENT_KEYS.includes( direction ) ) {
-		m_player.messages.push( "Direction is not valid" );
+		g_player.messages.push( "Direction is not valid" );
 		render();
 		return;
 	}
 
-	let distance = m_player.weapons.range.distance;
-	if( m_player.weapons.range.missileType ) {
-		distance += m_player.weapons.missile.distance;
+	let distance = g_player.weapons.range.distance;
+	if( g_player.weapons.range.missileType ) {
+		distance += g_player.weapons.missile.distance;
 	}
 
-	await fireMissile( m_player.x, m_player.y, direction, distance, m_player );
+	await fireMissile( g_player.x, g_player.y, direction, distance, g_player );
 	
 	// Reduce missile quantity and remove it from inventory when gone
 	let missileIndex = null;
-	if( m_player.weapons.range.missileType ) {
-		missileIndex = m_player.items.findIndex( item => item === m_player.weapons.missile );
+	if( g_player.weapons.range.missileType ) {
+		missileIndex = g_player.items.findIndex( item => item === g_player.weapons.missile );
 	} else {
-		missileIndex = m_player.items.findIndex( item => item === m_player.weapons.range );
+		missileIndex = g_player.items.findIndex( item => item === g_player.weapons.range );
 	}
 	
-	const missile = m_player.items[ missileIndex ];
+	const missile = g_player.items[ missileIndex ];
 	missile.quantity -= 1;
 	if( missile.quantity === 0 ) {
-		if( m_player.weapons.range.missileType ) {
-			m_player.weapons.missile = null;
+		if( g_player.weapons.range.missileType ) {
+			g_player.weapons.missile = null;
 		} else {
-			m_player.weapons.range = null;
+			g_player.weapons.range = null;
 		}
-		m_player.items.splice( missileIndex, 1 );
+		g_player.items.splice( missileIndex, 1 );
 	}
 	endTurn();
 	render();
@@ -825,19 +827,19 @@ async function fireMissile( x, y, direction, distance, self ) {
 		$.setPos( x + OFFSET_X, y );
 		$.setColor( 15 );
 		$.print( symbol, true );
-		if( TILE_BLOCKING.includes( m_level.map[ y ][ x ] ) ) {
+		if( TILE_BLOCKING.includes( g_level.map[ y ][ x ] ) ) {
 			isCollided = true;
 		}
-		if( self === m_player ) {
-			const enemyHit = m_level.enemies.find( enemy2 => enemy2.x === x && enemy2.y === y );
+		if( self === g_player ) {
+			const enemyHit = g_level.enemies.find( enemy2 => enemy2.x === x && enemy2.y === y );
 			if( enemyHit ) {
 				isCollided = true;
-				combatStrike( m_player, enemyHit, true, missileName );
+				combatStrike( g_player, enemyHit, true, missileName );
 			}
 		} else {
-			if( x === m_player.x && y === m_player.y ) {
+			if( x === g_player.x && y === g_player.y ) {
 				isCollided = true;
-				combatStrike( self, m_player, true, missileName );
+				combatStrike( self, g_player, true, missileName );
 			}
 		}
 		await new Promise( ( resolve ) => {
@@ -854,38 +856,38 @@ function search() {
 		[ -1,  1 ], [ 0,  1 ], [ 1,  1 ]
 	];
 	
-	m_player.messages.push( "You search the area..." );
+	g_player.messages.push( "You search the area..." );
 
 	let hasDiscovery = false;
 
 	// Search 3 areas
 	for( let i = 0; i < 3; i += 1 ) {
 		const search = searches[ Math.floor( Math.random() * searches.length ) ];
-		const tile = m_level.map[ m_player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ];
+		const tile = g_level.map[ g_player.y + search[ 1 ] ][ g_player.x + search[ 0 ] ];
 		if( tile === TILE_HIDDEN_DOOR ) {
-			m_player.messages.push( "\tand find a hidden door" );
+			g_player.messages.push( "\tand find a hidden door" );
 			hasDiscovery = true;
-			m_level.map[ m_player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ] = TILE_DOOR;
+			g_level.map[ g_player.y + search[ 1 ] ][ g_player.x + search[ 0 ] ] = TILE_DOOR;
 		} else if( tile === TILE_HIDDEN_PATH ) {
-			m_player.messages.push( "\tand find a hidden path" );
+			g_player.messages.push( "\tand find a hidden path" );
 			hasDiscovery = true;
-			m_level.map[ m_player.y + search[ 1 ] ][ m_player.x + search[ 0 ] ] = TILE_PATH;
+			g_level.map[ g_player.y + search[ 1 ] ][ g_player.x + search[ 0 ] ] = TILE_PATH;
 		} 
 	}
 	if( !hasDiscovery ) {
-		m_player.messages.push( "\tand find nothing." );
+		g_player.messages.push( "\tand find nothing." );
 	}
 	endTurn();
 	render();
 }
 
 function endTurn() {
-	m_player.hunger += 0.05;
-	m_player.thirst += 0.15;
-	m_player.lightRadius = Math.max( m_player.lightRadius - m_player.lightFade, 0 );
+	g_player.hunger += 0.05;
+	g_player.thirst += 0.15;
+	g_player.lightRadius = Math.max( g_player.lightRadius - g_player.lightFade, 0 );
 
 	// Move enemies
-	for( const enemy of m_level.enemies ) {
+	for( const enemy of g_level.enemies ) {
 		
 		const lastPosition = { "x": enemy.x, "y": enemy.y };
 
@@ -909,11 +911,11 @@ function endTurn() {
 		for( const move of possibleMoves ) {
 			const x = enemy.x + move.x;
 			const y = enemy.y + move.y;
-			const isOccupied = m_level.enemies.find( enemy2 => enemy2.x === x && enemy2.y === y );
+			const isOccupied = g_level.enemies.find( enemy2 => enemy2.x === x && enemy2.y === y );
 			if(
-				x >= 0 && x < m_level.width &&
-				y >= 0 && y < m_level.height &&
-				TILE_WALKABLE.includes( m_level.map[ y ][ x ] ) &&
+				x >= 0 && x < g_level.width &&
+				y >= 0 && y < g_level.height &&
+				TILE_WALKABLE.includes( g_level.map[ y ][ x ] ) &&
 				!isOccupied
 			) {
 				validMoves.push( move );
@@ -921,14 +923,14 @@ function endTurn() {
 		}
 
 		// Is player in range?
-		const dx = enemy.x - m_player.x;
-		const dy = enemy.y - m_player.y;
+		const dx = enemy.x - g_player.x;
+		const dy = enemy.y - g_player.y;
 		const d = Math.sqrt( dx * dx + dy * dy );
-		if( d < enemy.vision && hasLineOfSight( enemy.x, enemy.y, m_player.x, m_player.y ) ) {
+		if( d < enemy.vision && hasLineOfSight( enemy.x, enemy.y, g_player.x, g_player.y ) ) {
 
 			// Move enemy towards player
-			const dx = m_player.x - enemy.x;
-			const dy = m_player.y - enemy.y;
+			const dx = g_player.x - enemy.x;
+			const dy = g_player.y - enemy.y;
 
 			if(
 				validMoves.find( move => move.x === Math.sign( dx ) && move.y === Math.sign( dy ) )
@@ -949,13 +951,13 @@ function endTurn() {
 		}
 
 		// Check if enemy hits player
-		if( enemy.x === m_player.x && enemy.y === m_player.y ) {
-			combatStrike( enemy, m_player );
+		if( enemy.x === g_player.x && enemy.y === g_player.y ) {
+			combatStrike( enemy, g_player );
 			enemy.x = lastPosition.x;
 			enemy.y = lastPosition.y;
 
 			// Stop all other enemy movements if player is dead
-			if( m_player.hitPoints === 0 ) {
+			if( g_player.hitPoints === 0 ) {
 				return;
 			}
 		}
@@ -967,7 +969,7 @@ function endTurn() {
 	}
 
 	// Heal player over time
-	g_player.heal( m_player );
+	g_player.fn.heal();
 }
 
 function combatStrike( entity, target, isRange, missleName ) {
@@ -982,47 +984,47 @@ function combatStrike( entity, target, isRange, missleName ) {
 	if( attackRoll > defenseRoll ) {
 		const damage = attackRoll - defenseRoll;
 		target.hitPoints -= damage;
-		if( entity === m_player ) {
-			m_player.messages.push( `You hit the ${targetName} for ${damage} damage.` );	
+		if( entity === g_player ) {
+			g_player.messages.push( `You hit the ${targetName} for ${damage} damage.` );	
 		} else {
 			if( isRange ) {
-				m_player.messages.push( `You have been hit by a ${missleName} for ${damage} damage.` );
+				g_player.messages.push( `You have been hit by a ${missleName} for ${damage} damage.` );
 			} else {
-				m_player.messages.push( `The ${entityName} hits you for ${damage} damage.` );
+				g_player.messages.push( `The ${entityName} hits you for ${damage} damage.` );
 			}
 		}
 	} else {
-		if( entity === m_player ) {
+		if( entity === g_player ) {
 			if( isRange ) {
-				m_player.messages.push( `Your ${missleName} misses the ${targetName}.` );
+				g_player.messages.push( `Your ${missleName} misses the ${targetName}.` );
 			} else {
-				m_player.messages.push( `You attempt to attack the ${targetName} but miss.` );
+				g_player.messages.push( `You attempt to attack the ${targetName} but miss.` );
 			}
 		} else {
-			m_player.messages.push( `The ${entityName} attempts to attack you but misses.` );
+			g_player.messages.push( `The ${entityName} attempts to attack you but misses.` );
 		}
 	}
 
 	if( target.hitPoints <= 0 ) {
 		target.hitPoints = 0;
-		if( target === m_player ) {
-			m_player.messages.push( `You have been killed.` );
+		if( target === g_player ) {
+			g_player.messages.push( `You have been killed.` );
 		} else {
-			m_player.messages.push( `The ${targetName} is killed.` );
-			g_player.addExperience( m_player, target.experience );
+			g_player.messages.push( `The ${targetName} is killed.` );
+			g_player.fn.addExperience( target.experience );
 		}
-		m_level.enemies = m_level.enemies.filter( e => e !== target );
+		g_level.enemies = g_level.enemies.filter( e => e !== target );
 	}
 }
 
 function spawnEnemy() {
-	const enemy = getEnemy( m_player.level );
-	const room = m_level.rooms[ Math.floor( Math.random() * m_level.rooms.length ) ];
+	const enemy = getEnemy( g_player.level );
+	const room = g_level.rooms[ Math.floor( Math.random() * g_level.rooms.length ) ];
 	enemy.x = room.x + Math.floor( Math.random() * ( room.w - 2 ) ) + 1;
 	enemy.y = room.y + Math.floor( Math.random() * ( room.h - 2 ) ) + 1;
 
 	// Make sure enemy does not spawn on top of another enemy
-	if( m_level.enemies.find( e => e.x === enemy.x && e.y === enemy.y ) ) {
+	if( g_level.enemies.find( e => e.x === enemy.x && e.y === enemy.y ) ) {
 		return;
 	}
 
@@ -1030,7 +1032,7 @@ function spawnEnemy() {
 	if( m_litTiles[ `${enemy.y},${enemy.x}` ] ) {
 		return;
 	}
-	m_level.enemies.push( enemy );
+	g_level.enemies.push( enemy );
 }
 
 async function showLevelClearedAnimation() {
@@ -1056,12 +1058,12 @@ async function showLevelClearedAnimation() {
 		await new Promise( resolve => setTimeout( resolve, 8 ) );
 	}
 
-	m_player.depth += 1;
+	g_player.depth += 1;
 
 	// Randomly generate a shop
-	if( m_player.depth > m_player.lastShop + 2 ) {
+	if( g_player.depth > g_player.lastShop + 2 ) {
 		if( Math.random() < SHOP_CHANCE ) {
-			m_player.lastShop = m_player.depth;
+			g_player.lastShop = g_player.depth;
 			runShop();
 			return;
 		}

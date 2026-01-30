@@ -1,7 +1,7 @@
 "use strict";
 // File: items.js
 
-window.g_player = ( function () {
+const g_player = ( function () {
 	const RANKS = [
 		"Novice",
 		"Adventurer",
@@ -16,103 +16,99 @@ window.g_player = ( function () {
 	const HEALING_RATE = 0.01;
 
 	return {
-		createPlayer,
-		move,
-		addExperience,
-		heal
+		"name": "Player 1",
+		"level": 1,
+		"rank": RANKS[ 0 ],
+		"depth": 1,
+		"lastShop": 1,
+		"experience": 0,
+		"gold": 100,
+		"attack": 1,
+		"range": 0,
+		"defense": 1,
+		"hitPoints": 15,
+		"maxHitPoints": 15,
+		"hunger": 0,
+		"thirst": 0,
+		"lightRadius": 3,
+		"lightFade": 0.01,
+		"map": [],
+		"messages": [],
+		"items": [],
+		"armor": {
+			"head": null,
+			"body": null,
+			"hands": null,
+			"legs": null,
+			"feet": null,
+			"shield": null
+		},
+		"weapons": {
+			"melee": null,
+			"range": null,
+			"missile": null
+		},
+		"x": 0,
+		"y": 0,
+		"color": 14,
+		"symbol": String.fromCharCode( 1 ),
+		"fn": {
+			init,
+			move,
+			addExperience,
+			heal
+		}
 	};
 
-	function createPlayer( width, height ) {
-		const map = [];
+	function init( width, height ) {
 
 		// Create a blank map for the level size
 		for( let y = 0; y < height; y += 1 ) {
-			map.push( [] );
+			g_player.map.push( [] );
 			for( let x = 0; x < width; x += 1 ) {
-				map[ y ].push( TILE_BLANK );
+				g_player.map[ y ].push( TILE_BLANK );
 			}
 		}
-
-		const items = [];
 
 		// Give the player some starting items
 		const club = structuredClone( ITEMS.wooden_club );
 		club.quantity = 1;
-		items.push( club );
+		g_player.items.push( club );
 		const clothes = structuredClone( ITEMS.cloth_armor );
 		clothes.quantity = 1;
-		items.push( clothes );
+		g_player.items.push( clothes );
 		const torches = structuredClone( ITEMS.torch );
 		torches.quantity = 3;
-		items.push( torches );
+		g_player.items.push( torches );
 
 		// Give ranged items
 		const bow = structuredClone( ITEMS.bow );
 		bow.quantity = 1;
-		items.push( bow );
+		g_player.items.push( bow );
 		const arrow = structuredClone( ITEMS.arrow );
 		arrow.quantity = 5;
-		items.push( arrow );
+		g_player.items.push( arrow );
 		const dart = structuredClone( ITEMS.dart );
 		dart.quantity = 5;
-		items.push( dart );
-
-		return {
-			"name": "Player 1",
-			"level": 1,
-			"rank": RANKS[ 0 ],
-			"depth": 1,
-			"lastShop": 1,
-			"experience": 0,
-			"gold": 100,
-			"attack": 1,
-			"range": 0,
-			"defense": 1,
-			"hitPoints": 15,
-			"maxHitPoints": 15,
-			"hunger": 0,
-			"thirst": 0,
-			"lightRadius": 3,
-			"lightFade": 0.01,
-			"map": map,
-			"messages": [],
-			"items": items,
-			"armor": {
-				"head": null,
-				"body": null,
-				"hands": null,
-				"legs": null,
-				"feet": null,
-				"shield": null
-			},
-			"weapons": {
-				"melee": null,
-				"range": null,
-				"missile": null
-			},
-			"x": 0,
-			"y": 0,
-			"color": 14,
-			"symbol": String.fromCharCode( 1 )
-		};
+		g_player.items.push( dart );
 	}
 
-	function move( dx, dy, player, level ) {
-		const lastPos = { "x": player.x, "y": player.y };
-		player.x += dx;
-		player.y += dy;
+	function move( dx, dy, level ) {
+		const lastPos = { "x": g_player.x, "y": g_player.y };
+		g_player.x += dx;
+		g_player.y += dy;
 
 		if(
-			player.x < 0 || player.x > level.width -1 ||
-			player.y < 0 || player.y > level.height - 1
+			g_player.x < 0 || g_player.x > level.width -1 ||
+			g_player.y < 0 || g_player.y > level.height - 1
 		) {
-			player.x = lastPos.x;
-			player.y = lastPos.y;
+			g_player.x = lastPos.x;
+			g_player.y = lastPos.y;
 		}
 
-		if( !TILE_WALKABLE.includes( level.map[ player.y ][ player.x ] ) ) {
-			player.x = lastPos.x;
-			player.y = lastPos.y;
+		if( !TILE_WALKABLE.includes( level.map[ g_player.y ][ g_player.x ] ) ) {
+			g_player.x = lastPos.x;
+			g_player.y = lastPos.y;
 		}
 
 		// Check if player hits an enemy
@@ -125,24 +121,24 @@ window.g_player = ( function () {
 		//}
 	}
 
-	function addExperience( player, amount ) {
-		player.experience += amount;
+	function addExperience( amount ) {
+		g_player.experience += amount;
 		
 		// Advance player level
-		const previousLevel = player.level;
-		player.level = Math.max(
-			LEVELS.findLastIndex( level => level <= player.experience ) + 1, 1
+		const previousLevel = g_player.level;
+		g_player.level = Math.max(
+			LEVELS.findLastIndex( level => level <= g_player.experience ) + 1, 1
 		);
-		if( previousLevel < player.level ) {
-			player.rank = RANKS[ player.level - 1 ];
-			player.maxHitPoints = HIT_POINTS[ player.level - 1 ];
-			player.messages.push( `You have advanced to the rank of ${player.rank}` );
+		if( previousLevel < g_player.level ) {
+			g_player.rank = RANKS[ g_player.level - 1 ];
+			g_player.maxHitPoints = HIT_POINTS[ g_player.level - 1 ];
+			g_player.messages.push( `You have advanced to the rank of ${g_player.rank}` );
 		}
 	}
 
-	function heal( player ) {
-		player.hitPoints = Math.min(
-			player.hitPoints + player.maxHitPoints * HEALING_RATE, player.maxHitPoints
+	function heal() {
+		g_player.hitPoints = Math.min(
+			g_player.hitPoints + g_player.maxHitPoints * HEALING_RATE, g_player.maxHitPoints
 		);
 	}
 

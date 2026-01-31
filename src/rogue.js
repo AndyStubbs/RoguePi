@@ -7,6 +7,7 @@
 const OFFSET_X = 17;
 //const END_TURN_ENEMY_SPAWN_CHANCE = 0.01;
 const END_TURN_ENEMY_SPAWN_CHANCE = 0;
+const SHOP_CHANCE = 0.3;
 
 const g_mainScreen = $.screen( "640x350" );
 const g_messageScreen = $.screen( "320x192", null, true );
@@ -19,14 +20,21 @@ $.setScreen( g_mainScreen );
 
 let g_level;
 
-g_player.fn.init( WIDTH, HEIGHT );
+g_player.fn.init();
 startLevel();
+
+
+g_level = g_dungeonMap.createMap( WIDTH, HEIGHT, g_player.depth );
+g_player.fn.resetMap( WIDTH, HEIGHT );
+g_player.x = g_level.startLocation.x;
+g_player.y = g_level.startLocation.y;
+g_shop.runShop();
 
 function startLevel() {
 	g_level = g_dungeonMap.createMap( WIDTH, HEIGHT, g_player.depth );
+	g_player.fn.resetMap( WIDTH, HEIGHT );
 	g_player.x = g_level.startLocation.x;
 	g_player.y = g_level.startLocation.y;
-
 	addGameKeys();
 	render();
 }
@@ -55,11 +63,11 @@ function render() {
 
 	// Render exit
 	const exitTileId = `${g_level.exitLocation.x},${g_level.exitLocation.y}`;
-	if( litTiles[ exitTileId ] ) {
+	//if( litTiles[ exitTileId ] ) {
 		$.setPos( g_level.exitLocation.x + OFFSET_X, g_level.exitLocation.y );
 		$.setColor( 7 );
 		$.print( TILE_EXIT, true );
-	}
+	//}
 
 	// Render enemies
 	for( const enemy of g_level.enemies ) {
@@ -94,7 +102,7 @@ function render() {
 		setTimeout( () => {
 			showGameOverAnimation();
 		}, 1000 );
-		return;	
+		return;
 	}
 
 	// Check if player has found the exit
@@ -1064,7 +1072,7 @@ async function showLevelClearedAnimation() {
 	if( g_player.depth > g_player.lastShop + 2 ) {
 		if( Math.random() < SHOP_CHANCE ) {
 			g_player.lastShop = g_player.depth;
-			runShop();
+			g_shop.runShop();
 			return;
 		}
 	}

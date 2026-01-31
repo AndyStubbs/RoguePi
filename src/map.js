@@ -16,6 +16,17 @@ window.g_dungeonMap = ( function () {
 	level1[ TILE_PATH ] = [ 7, 8 ]
 	level1.WALLS = [ 6, 186 ];
 	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
+	MAP_COLORS.push( level1 );
 
 	let m_count = 1;
 	return {

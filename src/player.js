@@ -54,21 +54,14 @@ const g_player = ( function () {
 		"symbol": String.fromCharCode( 1 ),
 		"fn": {
 			init,
+			resetMap,
 			move,
 			addExperience,
 			heal
 		}
 	};
 
-	function init( width, height ) {
-
-		// Create a blank map for the level size
-		for( let y = 0; y < height; y += 1 ) {
-			g_player.map.push( [] );
-			for( let x = 0; x < width; x += 1 ) {
-				g_player.map[ y ].push( TILE_BLANK );
-			}
-		}
+	function init() {
 
 		// Give the player some starting items
 		const club = structuredClone( ITEMS.wooden_club );
@@ -91,6 +84,16 @@ const g_player = ( function () {
 		const dart = structuredClone( ITEMS.dart );
 		dart.quantity = 5;
 		g_player.items.push( dart );
+	}
+
+	function resetMap( width, height ) {
+		g_player.map = [];
+		for( let y = 0; y < height; y += 1 ) {
+			g_player.map.push( [] );
+			for( let x = 0; x < width; x += 1 ) {
+				g_player.map[ y ].push( TILE_BLANK );
+			}
+		}
 	}
 
 	function move( dx, dy, level ) {

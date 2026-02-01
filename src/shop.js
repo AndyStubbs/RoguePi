@@ -132,7 +132,7 @@
                                                               
                                                               
                                  ====                         
-                                                              
+                                /    \\                       
                                                               
                                                               
                                                               
@@ -265,15 +265,39 @@ const g_shop = ( function () {
                                                               
                                                               
                                                               
-                                ______                        
-                               /      \\                       
-                              |        |                      
-                            /-\\        /-\\                    
+                                                              
+                                                               
+                                                              
+                                                                
                            {  }\\-    -/{  }                   
                            |  |        |  |                   
                            \\  \\        /  /                   
                             \\  ^-    -^  /                    
                              \\---    ---/                     
+                                                              
+                                                              
+                                                              
+                                                              
+                                                              
+                                                              
+                                                              
+                                                              `.split( "\n" );
+
+
+
+const SHOP_LAYER_21 = `
+                                                              
+                                                              
+                                                              
+                                ______                        
+                               /      \\                       
+                              |        |                      
+                            /-\\        /-\\                    
+                               \\-    -/                       
+                                                              
+                                                                
+                                                               
+                                                               
                                                               
                                                               
                                                               
@@ -310,9 +334,9 @@ const SHOP_LAYER_4 = `
                                                               
                                                               
                                                               
-                                 ====                         
-                                                              
-                                                              
+                                 ____                         
+                                /    \\                       
+                                <    >                     
                                                               
                                                               
                                                               
@@ -382,6 +406,8 @@ const SHOP_LAYER_6 = `
 		renderShopLayer( SHOP_LAYER_1 );
 		$.setColor( 137 );
 		renderShopLayer( SHOP_LAYER_2 );
+		$.setColor( 118 );
+		renderShopLayer( SHOP_LAYER_21 );
 		$.setColor( 79 );
 		renderShopLayer( SHOP_LAYER_3 );
 		$.setColor( 6 );

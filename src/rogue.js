@@ -23,7 +23,6 @@ let g_level;
 g_player.fn.init();
 startLevel();
 
-
 g_level = g_dungeonMap.createMap( WIDTH, HEIGHT, g_player.depth );
 g_player.fn.resetMap( WIDTH, HEIGHT );
 g_player.x = g_level.startLocation.x;

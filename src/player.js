@@ -19,7 +19,7 @@ const g_player = ( function () {
 		"name": "Player 1",
 		"level": 1,
 		"rank": RANKS[ 0 ],
-		"depth": 1,
+		"depth": 20,
 		"lastShop": 1,
 		"experience": 0,
 		"gold": 100,

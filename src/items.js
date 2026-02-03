@@ -163,6 +163,7 @@ const ITEMS = {
 	"pi_amulet": {
 		"name": "Pi Amulet",
 		"symbol": String.fromCharCode( 227 ),
+		"levels": [ 20, 99 ],
 		"dropValue": 0,
 		"cost": 1000,
 		"color": 14,

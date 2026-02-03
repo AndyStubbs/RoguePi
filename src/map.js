@@ -7,26 +7,61 @@ window.g_dungeonMap = ( function () {
 	const ROOM_ITEM_DROP_CHANCE = 0.9;
 	const ROOM_BEND_CHANCE = 0.5;
 	const ENEMY_SPAWN_CHANCE = 0.65;
-	//const ENEMY_SPAWN_CHANCE = 0;
 
 	// Map Colors
 	const MAP_COLORS = [];
-	const level1 = {};
-	level1[ TILE_FLOOR ] = [ 2, 191 ];
-	level1[ TILE_PATH ] = [ 7, 8 ]
-	level1.WALLS = [ 6, 186 ];
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
-	MAP_COLORS.push( level1 );
+
+	// Classic Rogue Colors
+	const colorSet1 = {};
+	colorSet1[ TILE_FLOOR ] = [ 2, 191 ];
+	colorSet1[ TILE_PATH ] = [ 7, 8 ]
+	colorSet1.WALLS = [ 6, 186 ];
+
+	// Ice walls
+	const colorSet2 = {};
+	colorSet2[ TILE_FLOOR ] = [ 35, 179 ];
+	colorSet2[ TILE_PATH ] = [ 78, 227 ]
+	colorSet2.WALLS = [ 3, 197 ];
+
+	// Stone Walls
+	const colorSet3 = {};
+	colorSet3[ TILE_FLOOR ] = [ 23, 26 ];
+	colorSet3[ TILE_PATH ] = [ 7, 8 ]
+	colorSet3.WALLS = [ 7, 8 ];
+
+	// Fire Cave
+	const colorSet4 = {};
+	colorSet4[ TILE_FLOOR ] = [ 23, 18 ];
+	colorSet4[ TILE_PATH ] = [ 23, 18 ]
+	colorSet4.WALLS = [ 4, 112 ];
+
+	// Levels 1 - 6
+	MAP_COLORS.push( colorSet1 );
+	MAP_COLORS.push( colorSet1 );
+	MAP_COLORS.push( colorSet1 );
+	MAP_COLORS.push( colorSet1 );
+	MAP_COLORS.push( colorSet1 );
+	MAP_COLORS.push( colorSet1 );
+
+	// Levels 7 - 12
+	MAP_COLORS.push( colorSet2 );
+	MAP_COLORS.push( colorSet2 );
+	MAP_COLORS.push( colorSet2 );
+	MAP_COLORS.push( colorSet2 );
+	MAP_COLORS.push( colorSet2 );
+	MAP_COLORS.push( colorSet2 );
+
+	// Levels 13 - 18
+	MAP_COLORS.push( colorSet3 );
+	MAP_COLORS.push( colorSet3 );
+	MAP_COLORS.push( colorSet3 );
+	MAP_COLORS.push( colorSet3 );
+	MAP_COLORS.push( colorSet3 );
+	MAP_COLORS.push( colorSet3 );
+
+	// Levels 19 - 20
+	MAP_COLORS.push( colorSet4 );
+	MAP_COLORS.push( colorSet4 );
 
 	let m_count = 1;
 	return {
@@ -53,7 +88,6 @@ window.g_dungeonMap = ( function () {
 		if( !doorData.isValid ) {
 			return createMap( width, height, level );
 		}
-
 		hideRandomPaths( map, width, height );
 
 		const itemData = generateItems( rooms, level );

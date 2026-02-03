@@ -55,6 +55,7 @@ const g_player = ( function () {
 		"fn": {
 			init,
 			resetMap,
+			revealMap,
 			move,
 			addExperience,
 			heal
@@ -96,6 +97,16 @@ const g_player = ( function () {
 		}
 	}
 
+	function revealMap( level ) {
+		g_player.map = [];
+		for( let y = 0; y < level.height; y += 1 ) {
+			g_player.map.push( [] );
+			for( let x = 0; x < level.width; x += 1 ) {
+				g_player.map[ y ].push( level.map[ y ][ x ] );
+			}
+		}
+	}
+
 	function move( dx, dy, level ) {
 		const lastPos = { "x": g_player.x, "y": g_player.y };
 		g_player.x += dx;
@@ -115,13 +126,13 @@ const g_player = ( function () {
 		}
 
 		// Check if player hits an enemy
-		//for( const enemy of level.enemies ) {
-		//	if( enemy.x === player.x && enemy.y === player.y ) {
-		//		combatStrike( player, enemy );
-		//		player.x = lastPos.x;
-		//		player.y = lastPos.y;
-		//	}
-		//}
+		for( const enemy of level.enemies ) {
+			if( enemy.x === g_player.x && enemy.y === g_player.y ) {
+				combatStrike( g_player, enemy );
+				g_player.x = lastPos.x;
+				g_player.y = lastPos.y;
+			}
+		}
 	}
 
 	function addExperience( amount ) {

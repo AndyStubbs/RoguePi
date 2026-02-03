@@ -11,8 +11,6 @@ const SHOP_CHANCE = 0.3;
 
 const g_mainScreen = $.screen( "640x350" );
 const g_messageScreen = $.screen( "320x192", null, true );
-const WIDTH = $.getCols() - OFFSET_X;
-const HEIGHT = $.getRows();
 
 g_mainScreen.setFont( 2 );
 g_messageScreen.setFont( 2 );
@@ -23,15 +21,10 @@ let g_level;
 g_player.fn.init();
 startLevel();
 
-g_level = g_dungeonMap.createMap( WIDTH, HEIGHT, g_player.depth );
-g_player.fn.resetMap( WIDTH, HEIGHT );
-g_player.x = g_level.startLocation.x;
-g_player.y = g_level.startLocation.y;
-g_shop.runShop();
-
 function startLevel() {
-	g_level = g_dungeonMap.createMap( WIDTH, HEIGHT, g_player.depth );
-	g_player.fn.resetMap( WIDTH, HEIGHT );
+	g_level = g_dungeonMap.createMap( $.getCols() - OFFSET_X, $.getRows(), g_player.depth );
+	g_player.fn.resetMap( $.getCols() - OFFSET_X, $.getRows() );
+	g_player.fn.revealMap( g_level );
 	g_player.x = g_level.startLocation.x;
 	g_player.y = g_level.startLocation.y;
 	addGameKeys();
@@ -538,6 +531,7 @@ function getMessagePosition( height ) {
 
 async function promptMessage( msg, isImmediate = false ) {
 	$.clearEvents();
+	render();
 	const height = 8;
 	const { x, y } = getMessagePosition( height );
 	drawMessageBorder( x, y, height );

@@ -6,8 +6,8 @@ window.g_dungeonMap = ( function () {
 	const HIDDEN_PATH_CHANCE = 0.0025;
 	const ROOM_ITEM_DROP_CHANCE = 0.9;
 	const ROOM_BEND_CHANCE = 0.5;
-	//const ENEMY_SPAWN_CHANCE = 0.65;
-	const ENEMY_SPAWN_CHANCE = 0;
+	const ENEMY_SPAWN_CHANCE = 0.65;
+	//const ENEMY_SPAWN_CHANCE = 0;
 
 	// Map Colors
 	const MAP_COLORS = [];

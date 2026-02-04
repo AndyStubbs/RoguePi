@@ -297,6 +297,10 @@ function hasLineOfSight( x1, y1, x2, y2 ) {
 }
 
 function addGameKeys() {
+	$.setActionKeys( [ "F1" ] );
+
+	// Help
+	$.onkey( "F1", "down", () => g_help.showHelp(), false, false );
 
 	// Up
 	$.onkey( "w", "down", () => move( 0, -1 ), false, true );

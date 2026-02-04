@@ -175,7 +175,7 @@ window.g_dungeonMap = ( function () {
 			"8": TILE_WALL_S,
 			"9": TILE_WALL_SE,
 			"D": TILE_DOOR
-		}
+		};
 		const ROOM = [
 			"0001D3000",
 			"001957300",

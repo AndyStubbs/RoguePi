@@ -9,7 +9,7 @@ const OFFSET_X = 17;
 const END_TURN_ENEMY_SPAWN_CHANCE = 0;
 const SHOP_CHANCE = 0.3;
 
-const g_mainScreen = $.screen( "640x350" );
+const g_mainScreen = $.screen( "640m350" );
 const g_messageScreen = $.screen( "320x192", null, true );
 
 window.g_mainScreen = g_mainScreen;
@@ -960,12 +960,12 @@ function endTurn() {
 			) {
 				enemy.x += Math.sign( dx );
 				enemy.y += Math.sign( dy );
-			} else {
+			} else if( validMoves.length > 0 ) {
 				const move = validMoves[ Math.floor( Math.random() * validMoves.length ) ];
 				enemy.x += move.x;
 				enemy.y += move.y;
 			}
-		} else {
+		} else if( validMoves.length > 0 ) {
 
 			// Move enemy randomly
 			const move = validMoves[ Math.floor( Math.random() * validMoves.length ) ];
@@ -1049,6 +1049,11 @@ function spawnEnemy() {
 
 	// Make sure enemy does not spawn on top of another enemy
 	if( g_level.enemies.find( e => e.x === enemy.x && e.y === enemy.y ) ) {
+		return;
+	}
+
+	// Make sure enemy is on a valid tile
+	if( !TILE_WALKABLE.includes( g_level.map[ enemy.y ][ enemy.x ] ) ) {
 		return;
 	}
 

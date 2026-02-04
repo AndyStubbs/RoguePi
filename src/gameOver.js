@@ -51,21 +51,23 @@ window.g_gameOver = ( function () {
 				"survived": entry.survived === true,
 				"name": entry.name != null ? String( entry.name ) : "Adventurer",
 				"killedBy": entry.killedBy != null ? String( entry.killedBy ) : "",
-				"scoreId": entry.scoreId != null ? entry.scoreId : null
+				"scoreId": entry.scoreId != null ? entry.scoreId : null,
+				"rank": entry.rank != null ? String( entry.rank ) : ""
 			} ) );
 		} catch ( e ) {
 			return [];
 		}
 	}
 
-	function saveHighScore( score, survived, name, killedBy, scoreId ) {
+	function saveHighScore( score, survived, name, killedBy, scoreId, rank ) {
 		const list = getHighScores();
 		list.push( {
 			"score": score,
 			"survived": survived,
 			"name": name != null ? String( name ).trim() || "Adventurer" : "Adventurer",
 			"killedBy": killedBy != null ? String( killedBy ).trim() : "",
-			"scoreId": scoreId != null ? scoreId : Date.now()
+			"scoreId": scoreId != null ? scoreId : Date.now(),
+			"rank": rank != null ? String( rank ).trim() : ""
 		} );
 		list.sort( ( a, b ) => b.score - a.score );
 		const trimmed = list.slice( 0, MAX_HIGH_SCORES );
@@ -80,7 +82,8 @@ window.g_gameOver = ( function () {
 		const playerName = g_player.name != null ? String( g_player.name ).trim() || "Adventurer" : "Adventurer";
 		const deathCause = ( killedBy != null ? String( killedBy ).trim() : "" ) || ( g_player.killedBy != null ? String( g_player.killedBy ).trim() : "" );
 		const currentScoreId = Date.now();
-		saveHighScore( score, survived, playerName, deathCause, currentScoreId );
+		const playerRank = g_player.rank != null ? String( g_player.rank ).trim() : "";
+		saveHighScore( score, survived, playerName, deathCause, currentScoreId, playerRank );
 
 		const cols = $.getCols();
 		const rows = $.getRows();
@@ -185,14 +188,16 @@ window.g_gameOver = ( function () {
 		const highScores = getHighScores();
 		const piItem = g_items.getItemByKey( "pi_amulet" );
 		const piSymbol = piItem ? piItem.symbol : String.fromCharCode( 227 );
-		const rankColW = 2;
-		const nameColW = 16;
+		const rankColW = 2;      // numeric ranking (#)
+		const nameColW = 16;     // player name
+		const titleColW = 10;    // level rank title (Novice, Adventurer, etc.)
 		const scoreColW = 8;
 		const symbolColW = 1;
 		const resultColW = 22;
 
 		const headerStr = " #".padEnd( rankColW ) + " " +
 			"Name".padEnd( nameColW ) + " " +
+			"Rank".padEnd( titleColW ) + " " +
 			"Score".padStart( scoreColW ) + " " +
 			piSymbol.padEnd( symbolColW ) + " " +
 			"Result".padEnd( resultColW );
@@ -205,6 +210,10 @@ window.g_gameOver = ( function () {
 			const nameStr = entry.name.length > nameColW
 				? entry.name.substring( 0, nameColW - 1 ) + "."
 				: entry.name.padEnd( nameColW );
+			const rankTitleRaw = entry.rank || "";
+			const rankTitleStr = rankTitleRaw.length > titleColW
+				? rankTitleRaw.substring( 0, titleColW - 1 ) + "."
+				: rankTitleRaw.padEnd( titleColW );
 			const scoreStr = entry.score.toString().padStart( scoreColW );
 			const symbolStr = entry.survived ? piSymbol : "-";
 			const resultText = entry.survived
@@ -213,7 +222,10 @@ window.g_gameOver = ( function () {
 			const resultStr = resultText.length > resultColW
 				? resultText.substring( 0, resultColW - 1 ) + "."
 				: resultText.padEnd( resultColW );
-			tableLines.push( rankStr + " " + nameStr + " " + scoreStr + " " + symbolStr + " " + resultStr );
+			tableLines.push(
+				rankStr + " " + nameStr + " " + rankTitleStr + " " +
+				scoreStr + " " + symbolStr + " " + resultStr
+			);
 		}
 
 		const longestLineLen = Math.max( ...tableLines.map( line => line.length ) );

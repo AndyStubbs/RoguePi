@@ -356,7 +356,18 @@ function addGameKeys() {
 
 function move( dx, dy ) {
 	g_player.fn.move( dx, dy, g_level );
-	pickupItems();
+	const victory = pickupItems();
+	if( victory ) {
+		$.clearEvents();
+		render();
+		printMessage(
+			"Victory! You have retrieved the Pi Amulet. You are being teleported to the surface..."
+		);
+		setTimeout( () => {
+			showVictorySequence();
+		}, 1500 );
+		return;
+	}
 	render();
 	endTurn();
 }
@@ -457,35 +468,41 @@ function printStat( title, val, c1 = 14, c2 = 7 ) {
 
 function pickupItems() {
 	const itemsToRemove = [];
+	let victory = false;
 	for( const item of g_level.items ) {
 		if( item.x === g_player.x && item.y === g_player.y ) {
 			let isAdded = pickupItem( item );
 			if( isAdded ) {
 				itemsToRemove.push( item );
-			}
-
-			// Print the pickup message
-			let pickupMsg = "";
-			if( item.quantity === 1 ) {
-				pickupMsg = `You have found ${item.article} ${item.name} `;
-			} else {
-				pickupMsg = `You have found ${item.quantity} ${item.plural} `;
-			}
-			if( isAdded ) {
-				pickupMsg += "and have added it to your inventory.";
-			} else {
-				let article = "it";
-				if( item.quantity > 1 ) {
-					article = "them";
+				if( item.name === "Pi Amulet" ) {
+					victory = true;
 				}
-				pickupMsg += `but you cannot pick ${article} up because you are holding too ` +
-					`many items.`;
 			}
 
-			g_player.messages.push( pickupMsg );
+			// Print the pickup message (skip for Pi Amulet; victory message shown instead)
+			if( item.name !== "Pi Amulet" ) {
+				let pickupMsg = "";
+				if( item.quantity === 1 ) {
+					pickupMsg = `You have found ${item.article} ${item.name} `;
+				} else {
+					pickupMsg = `You have found ${item.quantity} ${item.plural} `;
+				}
+				if( isAdded ) {
+					pickupMsg += "and have added it to your inventory.";
+				} else {
+					let article = "it";
+					if( item.quantity > 1 ) {
+						article = "them";
+					}
+					pickupMsg += `but you cannot pick ${article} up because you are holding too ` +
+						`many items.`;
+				}
+				g_player.messages.push( pickupMsg );
+			}
 		}
 	}
 	g_level.items = g_level.items.filter( item => !itemsToRemove.includes( item ) );
+	return victory;
 }
 
 function pickupItem( item ) {
@@ -1072,6 +1089,33 @@ async function showLevelClearedAnimation() {
 	startLevel();
 }
 
+async function showVictorySequence() {
+	// Same shrinking-rect animation as when reaching the exit
+	let x = OFFSET_X * 8;
+	let y = 0;
+	let width = $.width() - x;
+	let height = $.height();
+	while( width > 0 && height > 0 ) {
+
+		// Erase outer rect
+		$.setColor( 0 );
+		$.rect( x, y, width, height );
+		width -= 2;
+		height -= 2;
+		x += 1;
+		y += 1;
+
+		// Draw inner rect
+		$.setColor( 7 );
+		$.rect( x, y, width, height );
+
+		// Wait before next frame
+		await new Promise( resolve => setTimeout( resolve, 8 ) );
+	}
+	$.cls();
+	g_gameOver.showGameOverScreen( true );
+}
+
 async function showGameOverAnimation() {
 	let x = 0;
 	let y = 0;
@@ -1095,5 +1139,5 @@ async function showGameOverAnimation() {
 		await new Promise( resolve => setTimeout( resolve, 8 ) );
 	}
 	$.cls();
-	$.print( "Game Over" );
+	g_gameOver.showGameOverScreen( false );
 }

@@ -16,7 +16,7 @@ const g_player = ( function () {
 	const HEALING_RATE = 0.01;
 
 	return {
-		"name": "Player 1",
+		"name": "Player 1 Huzzaah",
 		"level": 1,
 		"rank": RANKS[ 0 ],
 		"depth": 20,

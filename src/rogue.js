@@ -453,8 +453,10 @@ function renderStats() {
 function printTitle( title ) {
 	const leftPadding = Math.floor( ( OFFSET_X - title.length ) / 2 );
 	const rightPadding = OFFSET_X - leftPadding - title.length;
-	$.print( "".padEnd( leftPadding, " " ) + title +  "".padStart( rightPadding, " " ), true );
+
 	const posPx = $.getPosPx();
+	$.setPosPx( 7, posPx.y );
+	$.print( "".padEnd( leftPadding, " " ) + title +  "".padStart( rightPadding, " " ), true );
 	$.rect( 4, posPx.y - 4, OFFSET_X * 8 - 4, 16 );
 	$.print();
 }

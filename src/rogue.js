@@ -12,14 +12,13 @@ const SHOP_CHANCE = 0.3;
 const g_mainScreen = $.screen( "640x350" );
 const g_messageScreen = $.screen( "320x192", null, true );
 
+window.g_mainScreen = g_mainScreen;
+
 g_mainScreen.setFont( 2 );
 g_messageScreen.setFont( 2 );
 $.setScreen( g_mainScreen );
 
 let g_level;
-
-g_player.fn.init();
-startLevel();
 
 function startLevel() {
 	g_level = g_dungeonMap.createMap( $.getCols() - OFFSET_X, $.getRows(), g_player.depth );

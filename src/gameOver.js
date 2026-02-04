@@ -135,6 +135,7 @@ window.g_gameOver = ( function () {
 		$.setColor( colorBreakdownLabel );
 		$.print( "  Gold: ", true );
 		$.setColor( colorBreakdownValue );
+		$.setPos( 50, row );
 		$.print( breakdown.gold.toString().padStart( valueW ), true );
 		row += 1;
 		$.setPos( breakdownLeft, row );

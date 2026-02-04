@@ -368,7 +368,7 @@ function move( dx, dy ) {
 		);
 		setTimeout( () => {
 			showVictorySequence();
-		}, 1500 );
+		}, 2500 );
 		return;
 	}
 	render();
@@ -905,13 +905,48 @@ function search() {
 }
 
 function endTurn() {
+
+	// Update player hunger, thirst, and light radius
+	const lastHunger = g_player.hunger;
+	const lastThirst = g_player.thirst;
+	const lastLightRadius = g_player.lightRadius;
+
 	g_player.hunger += 0.05;
 	g_player.thirst += 0.15;
 	g_player.lightRadius = Math.max( g_player.lightRadius - g_player.lightFade, 0 );
 
+	// Warn player if hunger or thirst is too high
+	if( g_player.hunger >= 100 ) {
+		g_player.messages.push( "You are starving! You lose 1 hit point." );
+		g_player.hitPoints -= 1;
+	} else if( lastHunger < 80 && g_player.hunger >= 80 ) {
+		g_player.messages.push( "You are getting hungry." );
+	}
+	if( g_player.thirst >= 100 ) {
+		g_player.messages.push( "You are thirsty! You lose 1 hit point." );
+		g_player.hitPoints -= 1;
+	} else if( lastThirst < 80 && g_player.thirst >= 80 ) {
+		g_player.messages.push( "You are getting thirsty." );
+	}
+
+	if( g_player.hitPoints === 0 ) {
+		g_player.messages.push( `You have died.` );
+		return;
+	}
+
+	// Warn player if torch is fading
+	if( 
+		( lastLightRadius > 3 && g_player.lightRadius < 3 ) ||
+		( lastLightRadius > 2 && g_player.lightRadius < 2 ) ||
+		( lastLightRadius > 1 && g_player.lightRadius < 1 )
+	) {
+		g_player.messages.push( "Your torch flickers and dims." );
+	} else if( lastLightRadius > 0 && g_player.lightRadius <= 0 ) {
+		g_player.messages.push( "Your torch has gone out." );
+	}
+
 	// Move enemies
 	for( const enemy of g_level.enemies ) {
-		
 		const lastPosition = { "x": enemy.x, "y": enemy.y };
 
 		// Get possible move directions
@@ -1101,10 +1136,11 @@ async function showLevelClearedAnimation() {
 }
 
 async function showVictorySequence() {
+
 	// Same shrinking-rect animation as when reaching the exit
-	let x = OFFSET_X * 8;
+	let x = 0;
 	let y = 0;
-	let width = $.width() - x;
+	let width = $.width();
 	let height = $.height();
 	while( width > 0 && height > 0 ) {
 

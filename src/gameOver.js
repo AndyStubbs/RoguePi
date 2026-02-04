@@ -4,6 +4,13 @@
 window.g_gameOver = ( function () {
 	const HIGH_SCORES_KEY = "RoguePiHighScores";
 	const MAX_HIGH_SCORES = 10;
+	const RANK_COL_W = 2;      // numeric ranking (#)
+	const NAME_COL_W = 16;     // player name
+	const TITLE_COL_W = 10;     // level rank title (Novice, Adventurer, etc.)
+	const SCORE_COL_W = 8;
+	const SYMBOL_COL_W = 1;
+	const RESULT_COL_W = 22;
+	const PI_SYMBOL = String.fromCharCode( 227 );
 
 	return {
 		"showGameOverScreen": showGameOverScreen
@@ -186,62 +193,77 @@ window.g_gameOver = ( function () {
 		row += 2;
 
 		const highScores = getHighScores();
-		const piItem = g_items.getItemByKey( "pi_amulet" );
-		const piSymbol = piItem ? piItem.symbol : String.fromCharCode( 227 );
-		const rankColW = 2;      // numeric ranking (#)
-		const nameColW = 16;     // player name
-		const titleColW = 10;    // level rank title (Novice, Adventurer, etc.)
-		const scoreColW = 8;
-		const symbolColW = 1;
-		const resultColW = 22;
+		const headerStr = " #".padEnd( RANK_COL_W ) + " " +
+			"Name".padEnd( NAME_COL_W ) + " " +
+			"Rank".padEnd( TITLE_COL_W ) + " " +
+			"Score".padStart( SCORE_COL_W ) + " " +
+			PI_SYMBOL.padEnd( SYMBOL_COL_W ) + " " +
+			"Result".padEnd( RESULT_COL_W );
 
-		const headerStr = " #".padEnd( rankColW ) + " " +
-			"Name".padEnd( nameColW ) + " " +
-			"Rank".padEnd( titleColW ) + " " +
-			"Score".padStart( scoreColW ) + " " +
-			piSymbol.padEnd( symbolColW ) + " " +
-			"Result".padEnd( resultColW );
-
-		let currentScoreIndex = 0;
 		const tableLines = [ headerStr ];
 		for( let i = 0; i < highScores.length; i++ ) {
 			const entry = highScores[ i ];
-			const rankStr = ( i + 1 ).toString().padStart( rankColW );
-			const nameStr = entry.name.length > nameColW
-				? entry.name.substring( 0, nameColW - 1 ) + "."
-				: entry.name.padEnd( nameColW );
-			const rankTitleRaw = entry.rank || "";
-			const rankTitleStr = rankTitleRaw.length > titleColW
-				? rankTitleRaw.substring( 0, titleColW - 1 ) + "."
-				: rankTitleRaw.padEnd( titleColW );
-			const scoreStr = entry.score.toString().padStart( scoreColW );
-			const symbolStr = entry.survived ? piSymbol : "-";
-			const resultText = entry.survived
-				? "Survived"
-				: ( "Killed by " + ( entry.killedBy || "?" ) );
-			const resultStr = resultText.length > resultColW
-				? resultText.substring( 0, resultColW - 1 ) + "."
-				: resultText.padEnd( resultColW );
-			tableLines.push(
-				rankStr + " " + nameStr + " " + rankTitleStr + " " +
-				scoreStr + " " + symbolStr + " " + resultStr
-			);
+			tableLines.push( createScoreLine( entry, i ) );
 		}
 
 		const longestLineLen = Math.max( ...tableLines.map( line => line.length ) );
 		const leftPad = Math.max( 0, Math.floor( ( cols - longestLineLen ) / 2 ) ) + 1;
 
+		let isCurrentScoreInTop10 = false;
 		for( let i = 0; i < tableLines.length; i++ ) {
 			const isCurrentRow = i > 0 && highScores[ i - 1 ].scoreId === currentScoreId;
 			$.setColor( i === 0 ? colorHeader : ( isCurrentRow ? colorCurrentRow : colorRow ) );
-			$.setPos( leftPad, row );
+			$.setPos( leftPad + 5, row );
 			$.print( tableLines[ i ], true );
 			row += 1;
+			if( isCurrentRow ) {
+				isCurrentScoreInTop10 = true;
+			}
 		}
 
+		if( !isCurrentScoreInTop10 ) {
+			row += 1;
+			const newLine = createScoreLine( {
+				"name": playerName,
+				"rank": playerRank,
+				"score": score,
+				"survived": survived,
+				"killedBy": deathCause
+			}, null );
+			$.setColor( colorHint );
+			$.setPos( leftPad + 5, row );
+			$.print( newLine, true );
+			row += 2;
+		}
 		row = rows - 2;
 		$.setColor( colorHint );
 		$.setPos( 0, row );
 		$.print( "Press F5 to play again", true, true );
 	}
+
+	function createScoreLine( entry, index ) {
+		let rankStr = "";
+		if( index != null ) {
+			rankStr = ( index + 1 ).toString().padStart( RANK_COL_W );
+		} else {
+			rankStr = "  ".padStart( RANK_COL_W );
+		}
+		const nameStr = entry.name.length > NAME_COL_W
+			? entry.name.substring( 0, NAME_COL_W - 1 ) + "."
+			: entry.name.padEnd( NAME_COL_W );
+		const rankTitleRaw = entry.rank || "";
+		const rankTitleStr = rankTitleRaw.length > TITLE_COL_W
+			? rankTitleRaw.substring( 0, TITLE_COL_W - 1 ) + "."
+			: rankTitleRaw.padEnd( TITLE_COL_W );
+		const scoreStr = entry.score.toString().padStart( SCORE_COL_W );
+		const symbolStr = entry.survived ? PI_SYMBOL : "-";
+		const resultText = entry.survived
+			? "Survived"
+			: ( "Killed by " + ( entry.killedBy || "?" ) );
+		const resultStr = resultText.length > RESULT_COL_W
+			? resultText.substring( 0, RESULT_COL_W - 1 ) + "."
+			: resultText.padEnd( RESULT_COL_W );
+		return rankStr + " " + nameStr + " " + rankTitleStr + " " + scoreStr + " " + symbolStr + " " + resultStr;
+	}
+
 } )();

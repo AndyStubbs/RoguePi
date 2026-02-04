@@ -166,14 +166,15 @@ window.g_gameOver = ( function () {
 		}
 		$.setPos( breakdownLeft, row );
 		$.setColor( colorBreakdownLabel );
-		$.print( "  -------", true );
+		$.print( "  ----------------------------------", true );
 		row += 1;
 		$.setPos( breakdownLeft, row );
 		$.setColor( colorBreakdownLabel );
 		$.print( "  Total: ", true );
+		$.setPos( 50, row );
 		$.setColor( colorScore );
 		$.print( breakdown.total.toString().padStart( valueW ), true );
-		row += 2;
+		row += 3;
 
 		$.setColor( colorHeader );
 		$.setPos( 0, row );
@@ -183,13 +184,13 @@ window.g_gameOver = ( function () {
 		const highScores = getHighScores();
 		const piItem = g_items.getItemByKey( "pi_amulet" );
 		const piSymbol = piItem ? piItem.symbol : String.fromCharCode( 227 );
-		const rankColW = 1;
+		const rankColW = 2;
 		const nameColW = 16;
 		const scoreColW = 8;
 		const symbolColW = 1;
 		const resultColW = 22;
 
-		const headerStr = "#".padEnd( rankColW ) + " " +
+		const headerStr = " #".padEnd( rankColW ) + " " +
 			"Name".padEnd( nameColW ) + " " +
 			"Score".padStart( scoreColW ) + " " +
 			piSymbol.padEnd( symbolColW ) + " " +

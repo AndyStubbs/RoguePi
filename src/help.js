@@ -33,36 +33,37 @@ window.g_help = ( function () {
 		centerLine( "────", row );
 		row += 2;
 
-		// Movement
+		// Movement — two columns: keys only (WASD layout + Arrow layout)
 		$.setColor( colorSection );
 		centerLine( "MOVEMENT", row );
 		row += 2;
 		$.setColor( colorDesc );
-		$.setPos( 2, row );
-		$.print( "W / " + String.fromCharCode( 24 ), true );
-		$.setPos( 12, row );
-		$.print( "Move up", true );
+		const halfCols = Math.floor( cols / 2 );
+		function centerInLeft( text, r ) {
+			const pad = Math.max( 0, Math.floor( ( halfCols - text.length ) / 2 ) );
+			$.setPos( pad, r );
+			$.print( text, true );
+		}
+		function centerInRight( text, r ) {
+			const pad = halfCols + Math.max( 0, Math.floor( ( halfCols - text.length ) / 2 ) );
+			$.setPos( pad, r );
+			$.print( text, true );
+		}
+		const up = String.fromCharCode( 24 );
+		const down = String.fromCharCode( 25 );
+		const left = String.fromCharCode( 27 );
+		const right = String.fromCharCode( 26 );
+		// Row 1: Q W E  |  Home Up PgUp (top row: up-left, up, up-right)
+		centerInLeft( "Q  W  E", row );
+		centerInRight( "Home  " + up + "  PgUp", row );
 		row += 1;
-		$.setPos( 2, row );
-		$.print( "S / " + String.fromCharCode( 25 ), true );
-		$.setPos( 12, row );
-		$.print( "Move down", true );
+		// Row 2: A S D  |  Left Down Right
+		centerInLeft( "A  S  D", row );
+		centerInRight( left + "  " + down + "  " + right, row );
 		row += 1;
-		$.setPos( 2, row );
-		$.print( "A / " + String.fromCharCode( 27 ), true );
-		$.setPos( 12, row );
-		$.print( "Move left", true );
-		row += 1;
-		$.setPos( 2, row );
-		$.print( "D / " + String.fromCharCode( 26 ), true );
-		$.setPos( 12, row );
-		$.print( "Move right", true );
-		row += 1;
-		$.setPos( 2, row );
-		$.print( "Q E Z C / Home PgUp PgDn End", true );
-		row += 1;
-		$.setPos( 12, row );
-		$.print( "Diagonal movement", true );
+		// Row 3: Z   C  |  End Down PgDn (bottom row: down-left, down, down-right)
+		centerInLeft( "Z     C", row );
+		centerInRight( "End  " + down + "  PgDn", row );
 		row += 2;
 
 		// Actions
@@ -94,6 +95,19 @@ window.g_help = ( function () {
 		$.print( "R", true );
 		$.setPos( 14, row );
 		$.print( "Rest (end turn, heal slowly)", true );
+		row += 3;
+
+		// Melee (own section after ACTIONS)
+		$.setColor( colorSection );
+		centerLine( "MELEE", row );
+		row += 2;
+		$.setColor( colorDesc );
+		$.setPos( 2, row );
+		$.print( "Melee attack", true );
+		row += 1;
+		$.setColor( colorKey );
+		$.setPos( 4, row );
+		$.print( "Move into enemy", true );
 		row += 2;
 
 		// Torches, Thirst, Hunger

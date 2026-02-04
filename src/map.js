@@ -8,6 +8,7 @@ window.g_dungeonMap = ( function () {
 	const ROOM_BEND_CHANCE = 0.5;
 	const ENEMY_SPAWN_CHANCE = 0.65;
 	const MAX_DEPTH = 20;
+	const MAX_MAP_ATTEMPTS = 5000;
 
 	// Map Colors
 	const MAP_COLORS = [];
@@ -69,17 +70,23 @@ window.g_dungeonMap = ( function () {
 		"createMap": createMap,
 		"getWallDirection": getWallDirection,
 		"isInRoom": isInRoom,
-		"renderMap": renderMap,
-		"isWalkable": isWalkable
+		"renderMap": renderMap
 	};
 
-	function createMap( width, height, depth ) {
+	function createMap( width, height, depth, attempts = 0 ) {
+		if( attempts >= MAX_MAP_ATTEMPTS ) {
+			console.warn( "Max map generation attempts reached, using last attempt." );
+		}
 		console.log( `GENERATING MAP: ${m_count}` );
 		m_count += 1;
 		const map = createBlankMap( width, height );
 		const rooms = generateRooms( map, width, height );
 		if( rooms.length < 3 ) {
-			return createMap( width, height, depth );
+			if( attempts >= MAX_MAP_ATTEMPTS ) {
+				console.warn( "Map rooms < 3, but max attempts reached – keeping map." );
+			} else {
+				return createMap( width, height, depth, attempts + 1 );
+			}
 		}
 
 		if( depth === MAX_DEPTH ) {
@@ -113,14 +120,20 @@ window.g_dungeonMap = ( function () {
 		addExtraConnection( map, rooms, width, height );
 		const doorData = buildRoomWallsAndDoors( map, rooms, width, height );
 
+		// Validate the doors
 		if( !doorData.isValid ) {
-			return createMap( width, height, depth );
+			if( attempts >= MAX_MAP_ATTEMPTS ) {
+				console.warn( "Door validation failed, but max attempts reached – keeping map." );
+			} else {
+				return createMap( width, height, depth, attempts + 1 );
+			}
 		}
 		hideRandomPaths( map, width, height );
 
 		const itemData = generateItems( rooms, depth );
+		let specialRoom = null;
 		if( depth === MAX_DEPTH ) {
-			const specialRoom = rooms.find( r => r.isSpecialRoom );
+			specialRoom = rooms.find( r => r.isSpecialRoom );
 			if( specialRoom ) {
 				const piAmulet = g_items.getItemByKey( "pi_amulet" );
 				piAmulet.quantity = 1;
@@ -139,6 +152,24 @@ window.g_dungeonMap = ( function () {
 		}
 		const enemies = spawnEnemies( rooms, depth, startData.startLocation, exitLocation );
 
+		// Validate the map
+		let targetLocation = structuredClone( exitLocation );
+		if( specialRoom ) {
+			targetLocation = structuredClone( specialRoom );
+			targetLocation.x += 4;
+			targetLocation.y += 3;
+		}
+		const isValid = validateMap( map, startData.startLocation, targetLocation );
+		if( !isValid ) {
+			if( attempts >= MAX_MAP_ATTEMPTS ) {
+				console.warn( "validateMap failed, but max attempts reached – keeping map." );
+			} else {
+				return createMap( width, height, depth, attempts + 1 );
+			}
+		}
+
+		console.log( "Map is valid!" );
+
 		return {
 			"map": map,
 			"rooms": rooms,
@@ -149,6 +180,55 @@ window.g_dungeonMap = ( function () {
 			"startLocation": startData.startLocation,
 			"exitLocation": exitLocation
 		};
+	}
+
+	function validateMap( map, startLocation, targetLocation ) {
+		const getNeighbors = ( x, y ) => {
+			return [
+				{ "x": x - 1, "y": y },
+				{ "x": x + 1, "y": y },
+				{ "x": x, "y": y - 1 },
+				{ "x": x, "y": y + 1 }
+			];
+		};
+
+		// Walk from the start location to the exit location or special room
+		const visited = {};
+		const queue = [ startLocation ];
+		const maxSteps = map.length * map[ 0 ].length * 10;
+		let steps = 0;
+		while( queue.length > 0 ) {
+			const current = queue.shift();
+			const key = `${current.x},${current.y}`;
+			if( visited[ key ] ) {
+				continue;
+			}
+			visited[ key ] = true;
+
+			steps += 1;
+			if( steps > maxSteps ) {
+				console.warn( "validateMap exceeded maxSteps, aborting validation." );
+				return false;
+			}
+
+			if( current.x === targetLocation.x && current.y === targetLocation.y ) {
+				return true;
+			}
+			const neighbors = getNeighbors( current.x, current.y );
+			for( const neighbor of neighbors ) {
+				if( neighbor.x < 0 || neighbor.x >= map[ 0 ].length || neighbor.y < 0 || neighbor.y >= map.length ) {
+					continue;
+				}
+				if( visited[ `${neighbor.x},${neighbor.y}` ] ) {
+					continue;
+				}
+				if( TILE_TRAVERSABLE.includes( map[ neighbor.y ][ neighbor.x ] ) ) {
+					queue.push( neighbor );
+				}
+			}
+		}
+		console.log( "Map is invalid!" );
+		return false;
 	}
 
 	function createBlankMap( width, height ) {
@@ -321,35 +401,6 @@ window.g_dungeonMap = ( function () {
 				"doors": [],
 				"isValid": false
 			};
-		}
-
-		// Make sure special room is connected to a path
-		if( specialRoom ) {
-			console.log( specialRoom );
-			console.log( map );
-			let isValid = false;
-			const mapChecks = [
-				[ specialRoom.y + 3, specialRoom.x ],
-				[ specialRoom.y + 3, specialRoom.x + 8 ],
-				[ specialRoom.y - 1, specialRoom.x + 4 ],
-				[ specialRoom.y + 7, specialRoom.x + 4 ],
-			];
-			for( const pos of mapChecks ) {
-				if( pos[ 0 ] >= 0 && pos[ 0 ] < map.length && pos[ 1 ] >= 0 && pos[ 1 ] < map[ 0 ].length ) {
-					const tile = map[ pos[ 0 ] ][ pos[ 1 ] ];
-					if( TILE_TRAVERSABLE.includes( tile ) ) {
-						isValid = true;
-					}
-					//map[ pos[ 0 ] ][ pos[ 1 ] ] = "X";
-				}
-			}
-			if( !isValid ) {
-				console.log( "Invalid special room!" );
-				return {
-					"doors": [],
-					"isValid": false
-				};
-			}
 		}
 
 		return {
@@ -684,10 +735,6 @@ window.g_dungeonMap = ( function () {
 				$.print( tile, true );
 			}
 		}
-	}
-
-	function isWalkable( map, x, y ) {
-		return map[ y ] && map[ y ][ x ] === TILE_FLOOR;
 	}
 
 } )();

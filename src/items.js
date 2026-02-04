@@ -57,7 +57,7 @@ const ITEMS = {
 		"symbol": "/",
 		"weapon": "melee",
 		"cost": 10,
-		"attack": 20,
+		"attack": 2,
 		"dropValue": 50,
 		"levels": [ 0, 99 ],
 		"color": 42
@@ -133,8 +133,8 @@ const ITEMS = {
 		"name": "cloth armor",
 		"symbol": "&",
 		"armor": "body",
-		"cost": 10,
-		"defense": 15,
+		"cost": 2,
+		"defense": 1,
 		"dropValue": 50,
 		"levels": [ 0, 99 ],
 		"color": 42

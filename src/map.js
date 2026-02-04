@@ -7,6 +7,7 @@ window.g_dungeonMap = ( function () {
 	const ROOM_ITEM_DROP_CHANCE = 0.9;
 	const ROOM_BEND_CHANCE = 0.5;
 	const ENEMY_SPAWN_CHANCE = 0.65;
+	const MAX_DEPTH = 20;
 
 	// Map Colors
 	const MAP_COLORS = [];
@@ -81,24 +82,24 @@ window.g_dungeonMap = ( function () {
 			return createMap( width, height, depth );
 		}
 
-		if( depth === 20 ) {
+		if( depth === MAX_DEPTH ) {
 			const circularRoomRect = { x: 0, y: 0, w: 7, h: 7 };
 			let placed = false;
 			for( let attempt = 0; attempt < 100 && !placed; attempt++ ) {
-				const cx = g_util.randomRange( 4, width - 4 );
-				const cy = g_util.randomRange( 4, height - 4 );
-				circularRoomRect.x = cx - 3;
-				circularRoomRect.y = cy - 3;
-				if( !circularRoomOverlaps( circularRoomRect, rooms ) ) {
-					carveCircularRoom( map, cx, cy );
+				const x = g_util.randomRange( 1, width - 8 );
+				const y = g_util.randomRange( 1, height - 8 );
+				circularRoomRect.x = x - 1;
+				circularRoomRect.y = y - 1;
+				circularRoomRect.w = 10;
+				circularRoomRect.h = 10;
+				if( !roomOverlapsAny( circularRoomRect, rooms ) ) {
+					carveCircularRoom( map, x, y );
 					const specialRoom = {
-						x: cx - 3,
-						y: cy - 3,
+						x: x,
+						y: y,
 						w: 7,
 						h: 7,
-						isSpecialRoom: true,
-						centerX: cx,
-						centerY: cy
+						isSpecialRoom: true
 					};
 					rooms.push( specialRoom );
 					const otherRoom = rooms[ g_util.randomRange( 0, rooms.length - 2 ) ];
@@ -118,22 +119,25 @@ window.g_dungeonMap = ( function () {
 		hideRandomPaths( map, width, height );
 
 		const itemData = generateItems( rooms, depth );
-		if( depth === 20 ) {
+		if( depth === MAX_DEPTH ) {
 			const specialRoom = rooms.find( r => r.isSpecialRoom );
-			if( specialRoom && specialRoom.centerX !== undefined ) {
+			if( specialRoom ) {
 				const piAmulet = g_items.getItemByKey( "pi_amulet" );
 				piAmulet.quantity = 1;
-				piAmulet.x = specialRoom.centerX + 1;
-				piAmulet.y = specialRoom.centerY;
+				piAmulet.x = specialRoom.x + 4;
+				piAmulet.y = specialRoom.y + 3;
 				itemData.items.push( piAmulet );
 				itemData.itemLookup[ `${piAmulet.x},${piAmulet.y}` ] = true;
 			}
 		}
 		const startData = chooseStartLocation( rooms, itemData.itemLookup );
-		const exitData = chooseExitLocation( rooms, startData.startingRoom, itemData.itemLookup );
-		const enemies = spawnEnemies(
-			rooms, depth, startData.startLocation, exitData.exitLocation
-		);
+		let exitLocation;
+		if( depth === MAX_DEPTH ) {
+			exitLocation = { "x": 0, "y": 0 };
+		} else {
+			exitLocation = chooseExitLocation( rooms, startData.startingRoom, itemData.itemLookup );
+		}
+		const enemies = spawnEnemies( rooms, depth, startData.startLocation, exitLocation );
 
 		return {
 			"map": map,
@@ -143,7 +147,7 @@ window.g_dungeonMap = ( function () {
 			"items": itemData.items,
 			"enemies": enemies,
 			"startLocation": startData.startLocation,
-			"exitLocation": exitData.exitLocation
+			"exitLocation": exitLocation
 		};
 	}
 
@@ -158,7 +162,7 @@ window.g_dungeonMap = ( function () {
 		return map;
 	}
 
-	function carveCircularRoom( map, cx, cy ) {
+	function carveCircularRoom( map, x, y ) {
 		const TILES = {
 			"0": TILE_BLANK,
 			"1": TILE_WALL_NW,
@@ -181,20 +185,19 @@ window.g_dungeonMap = ( function () {
 			"007351900",
 			"0007D9000"
 		];
-		let x = cx - 3;
-		let y = cy - 3;
+		let startX = x;
 		for( const rowStr of ROOM ) {
 			const row = rowStr.split( "" );
 			for( const col of row ) {
 				map[ y ][ x ] = TILES[ col ];
 				x += 1;
 			}
-			x = cx - 3;
+			x = startX;
 			y += 1;
 		}
 	}
 
-	function circularRoomOverlaps( circularRoom, rooms ) {
+	function roomOverlapsAny( circularRoom, rooms ) {
 		for( const r of rooms ) {
 			if( roomsOverlap( circularRoom, r ) ) {
 				return true;
@@ -267,8 +270,10 @@ window.g_dungeonMap = ( function () {
 
 	function buildRoomWallsAndDoors( map, rooms, width, height ) {
 		const doors = [];
+		let specialRoom = null;
 		for( const room of rooms ) {
 			if( room.isSpecialRoom ) {
+				specialRoom = room;
 				room.doors = [];
 				continue;
 			}
@@ -316,6 +321,35 @@ window.g_dungeonMap = ( function () {
 				"doors": [],
 				"isValid": false
 			};
+		}
+
+		// Make sure special room is connected to a path
+		if( specialRoom ) {
+			console.log( specialRoom );
+			console.log( map );
+			let isValid = false;
+			const mapChecks = [
+				[ specialRoom.y + 3, specialRoom.x ],
+				[ specialRoom.y + 3, specialRoom.x + 8 ],
+				[ specialRoom.y - 1, specialRoom.x + 4 ],
+				[ specialRoom.y + 7, specialRoom.x + 4 ],
+			];
+			for( const pos of mapChecks ) {
+				if( pos[ 0 ] >= 0 && pos[ 0 ] < map.length && pos[ 1 ] >= 0 && pos[ 1 ] < map[ 0 ].length ) {
+					const tile = map[ pos[ 0 ] ][ pos[ 1 ] ];
+					if( TILE_TRAVERSABLE.includes( tile ) ) {
+						isValid = true;
+					}
+					//map[ pos[ 0 ] ][ pos[ 1 ] ] = "X";
+				}
+			}
+			if( !isValid ) {
+				console.log( "Invalid special room!" );
+				return {
+					"doors": [],
+					"isValid": false
+				};
+			}
 		}
 
 		return {
@@ -370,6 +404,9 @@ window.g_dungeonMap = ( function () {
 		const itemLookup = {};
 		const items = [];
 		for( const room of rooms ) {
+			if( room.isSpecialRoom ) {
+				continue;
+			}
 			let count = 0;
 			while( Math.random() < ROOM_ITEM_DROP_CHANCE && count < 3 ) {
 				count += 1;
@@ -434,10 +471,7 @@ window.g_dungeonMap = ( function () {
 			}
 		}
 
-		return {
-			"exitRoom": exitRoom,
-			"exitLocation": exitLocation
-		};
+		return exitLocation
 	}
 
 	function spawnEnemies( rooms, level, startLocation, exitLocation ) {

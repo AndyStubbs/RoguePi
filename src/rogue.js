@@ -1028,6 +1028,7 @@ function combatStrike( entity, target, isRange, missleName ) {
 	if( target.hitPoints <= 0 ) {
 		target.hitPoints = 0;
 		if( target === g_player ) {
+			g_player.killedBy = entity.name || "something";
 			g_player.messages.push( `You have been killed.` );
 		} else {
 			g_player.messages.push( `The ${targetName} is killed.` );
@@ -1141,5 +1142,5 @@ async function showGameOverAnimation() {
 		await new Promise( resolve => setTimeout( resolve, 8 ) );
 	}
 	$.cls();
-	g_gameOver.showGameOverScreen( false );
+	g_gameOver.showGameOverScreen( false, g_player.killedBy );
 }

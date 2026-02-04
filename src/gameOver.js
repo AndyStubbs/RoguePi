@@ -6,9 +6,7 @@ window.g_gameOver = ( function () {
 	const MAX_HIGH_SCORES = 10;
 
 	return {
-		"showGameOverScreen": showGameOverScreen,
-		"getPlayerScore": getPlayerScore,
-		"getScoreBreakdown": getScoreBreakdown
+		"showGameOverScreen": showGameOverScreen
 	};
 
 	function getScoreBreakdown() {
@@ -38,11 +36,6 @@ window.g_gameOver = ( function () {
 		};
 	}
 
-	function getPlayerScore() {
-		const b = getScoreBreakdown();
-		return b.total;
-	}
-
 	function getHighScores() {
 		try {
 			const raw = localStorage.getItem( HIGH_SCORES_KEY );
@@ -56,19 +49,23 @@ window.g_gameOver = ( function () {
 			return list.map( entry => ( {
 				"score": entry.score,
 				"survived": entry.survived === true,
-				"name": entry.name != null ? String( entry.name ) : "Adventurer"
+				"name": entry.name != null ? String( entry.name ) : "Adventurer",
+				"killedBy": entry.killedBy != null ? String( entry.killedBy ) : "",
+				"scoreId": entry.scoreId != null ? entry.scoreId : null
 			} ) );
 		} catch ( e ) {
 			return [];
 		}
 	}
 
-	function saveHighScore( score, survived, name ) {
+	function saveHighScore( score, survived, name, killedBy, scoreId ) {
 		const list = getHighScores();
 		list.push( {
 			"score": score,
 			"survived": survived,
-			"name": name != null ? String( name ).trim() || "Adventurer" : "Adventurer"
+			"name": name != null ? String( name ).trim() || "Adventurer" : "Adventurer",
+			"killedBy": killedBy != null ? String( killedBy ).trim() : "",
+			"scoreId": scoreId != null ? scoreId : Date.now()
 		} );
 		list.sort( ( a, b ) => b.score - a.score );
 		const trimmed = list.slice( 0, MAX_HIGH_SCORES );
@@ -77,11 +74,13 @@ window.g_gameOver = ( function () {
 		} catch ( e ) {}
 	}
 
-	function showGameOverScreen( survived ) {
+	function showGameOverScreen( survived, killedBy ) {
 		const breakdown = getScoreBreakdown();
 		const score = breakdown.total;
 		const playerName = g_player.name != null ? String( g_player.name ).trim() || "Adventurer" : "Adventurer";
-		saveHighScore( score, survived, playerName );
+		const deathCause = ( killedBy != null ? String( killedBy ).trim() : "" ) || ( g_player.killedBy != null ? String( g_player.killedBy ).trim() : "" );
+		const currentScoreId = Date.now();
+		saveHighScore( score, survived, playerName, deathCause, currentScoreId );
 
 		const cols = $.getCols();
 		const rows = $.getRows();
@@ -182,36 +181,47 @@ window.g_gameOver = ( function () {
 		row += 2;
 
 		const highScores = getHighScores();
-		const rankColW = 3;
-		const nameColW = 18;
-		const scoreColW = 10;
-		const resultColW = 8;
-		const tableWidth = rankColW + 1 + nameColW + 1 + scoreColW + 1 + resultColW;
-		const leftPad = Math.max( 0, Math.floor( ( cols - tableWidth ) / 2 ) );
+		const piItem = g_items.getItemByKey( "pi_amulet" );
+		const piSymbol = piItem ? piItem.symbol : String.fromCharCode( 227 );
+		const rankColW = 1;
+		const nameColW = 16;
+		const scoreColW = 8;
+		const symbolColW = 1;
+		const resultColW = 22;
 
-		const headerStr = "  #".padEnd( rankColW ) + " " +
+		const headerStr = "#".padEnd( rankColW ) + " " +
 			"Name".padEnd( nameColW ) + " " +
 			"Score".padStart( scoreColW ) + " " +
+			piSymbol.padEnd( symbolColW ) + " " +
 			"Result".padEnd( resultColW );
 
-		$.setPos( leftPad, row );
-		$.setColor( colorHeader );
-		$.print( headerStr, true );
-		row += 1;
-
+		let currentScoreIndex = 0;
+		const tableLines = [ headerStr ];
 		for( let i = 0; i < highScores.length; i++ ) {
 			const entry = highScores[ i ];
-			const isCurrent = entry.score === score && entry.name === playerName && entry.survived === survived;
-			$.setColor( isCurrent ? colorCurrentRow : colorRow );
-			const rankStr = ( " " + ( i + 1 ).toString().padStart( 2 ) ).padStart( rankColW );
+			const rankStr = ( i + 1 ).toString().padStart( rankColW );
 			const nameStr = entry.name.length > nameColW
 				? entry.name.substring( 0, nameColW - 1 ) + "."
 				: entry.name.padEnd( nameColW );
 			const scoreStr = entry.score.toString().padStart( scoreColW );
-			const resultStr = ( entry.survived ? "Survived" : "Died" ).padEnd( resultColW );
-			const line = rankStr + " " + nameStr + " " + scoreStr + " " + resultStr;
+			const symbolStr = entry.survived ? piSymbol : "-";
+			const resultText = entry.survived
+				? "Survived"
+				: ( "Killed by " + ( entry.killedBy || "?" ) );
+			const resultStr = resultText.length > resultColW
+				? resultText.substring( 0, resultColW - 1 ) + "."
+				: resultText.padEnd( resultColW );
+			tableLines.push( rankStr + " " + nameStr + " " + scoreStr + " " + symbolStr + " " + resultStr );
+		}
+
+		const longestLineLen = Math.max( ...tableLines.map( line => line.length ) );
+		const leftPad = Math.max( 0, Math.floor( ( cols - longestLineLen ) / 2 ) ) + 1;
+
+		for( let i = 0; i < tableLines.length; i++ ) {
+			const isCurrentRow = i > 0 && highScores[ i - 1 ].scoreId === currentScoreId;
+			$.setColor( i === 0 ? colorHeader : ( isCurrentRow ? colorCurrentRow : colorRow ) );
 			$.setPos( leftPad, row );
-			$.print( line, true );
+			$.print( tableLines[ i ], true );
 			row += 1;
 		}
 

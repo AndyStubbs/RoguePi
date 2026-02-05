@@ -200,7 +200,7 @@ window.g_gameOver = ( function () {
 			"Name".padEnd( NAME_COL_W ) + " " +
 			"Rank".padEnd( TITLE_COL_W ) + " " +
 			"Score".padStart( SCORE_COL_W ) + " " +
-			PI_SYMBOL.padEnd( PI_COL_W ) + " " +
+			"DP".padEnd( PI_COL_W ) + " " +
 			"Result".padEnd( RESULT_COL_W );
 
 		const tableLines = [ headerStr ];

@@ -177,7 +177,8 @@ window.g_dungeonMap = ( function () {
 			"items": itemData.items,
 			"enemies": enemies,
 			"startLocation": startData.startLocation,
-			"exitLocation": exitLocation
+			"exitLocation": exitLocation,
+			"exitFound": false
 		};
 	}
 

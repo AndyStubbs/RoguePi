@@ -58,6 +58,11 @@ function render() {
 		$.setPos( g_level.exitLocation.x + OFFSET_X, g_level.exitLocation.y );
 		$.setColor( 7 );
 		$.print( TILE_EXIT, true );
+		g_level.exitFound = true;
+	} else if( g_level.exitFound ) {
+		$.setPos( g_level.exitLocation.x + OFFSET_X, g_level.exitLocation.y );
+		$.setColor( 8 );
+		$.print( TILE_EXIT, true );
 	}
 
 	// Render enemies
@@ -894,16 +899,20 @@ function search() {
 	// Search 3 areas
 	for( let i = 0; i < 3; i += 1 ) {
 		const search = searches[ Math.floor( Math.random() * searches.length ) ];
-		const tile = g_level.map[ g_player.y + search[ 1 ] ][ g_player.x + search[ 0 ] ];
-		if( tile === TILE_HIDDEN_DOOR ) {
+		const y = g_player.y + search[ 1 ];
+		const x = g_player.x + search[ 0 ];
+		if( x < 0 || x >= g_level.width || y < 0 || y >= g_level.height ) {
+			continue;
+		}
+		if( g_level.map[ y ][ x ] === TILE_HIDDEN_DOOR ) {
 			g_player.messages.push( "\tand find a hidden door" );
 			hasDiscovery = true;
-			g_level.map[ g_player.y + search[ 1 ] ][ g_player.x + search[ 0 ] ] = TILE_DOOR;
-		} else if( tile === TILE_HIDDEN_PATH ) {
+			g_level.map[ y ][ x ] = TILE_DOOR;
+		} else if( g_level.map[ y ][ x ] === TILE_HIDDEN_PATH ) {
 			g_player.messages.push( "\tand find a hidden path" );
 			hasDiscovery = true;
-			g_level.map[ g_player.y + search[ 1 ] ][ g_player.x + search[ 0 ] ] = TILE_PATH;
-		} 
+			g_level.map[ y ][ x ] = TILE_PATH;
+		}
 	}
 	if( !hasDiscovery ) {
 		g_player.messages.push( "\tand find nothing." );
@@ -1050,8 +1059,8 @@ function combatStrike( entity, target, isRange, missleName ) {
 	if( isRange ) {
 		attack = entity.range;
 	}
-	let attackRoll = Math.round( Math.random() * attack );
-	let defenseRoll = Math.round( Math.random() * target.defense );
+	let attackRoll = Math.random() * attack;
+	let defenseRoll = Math.random() * target.defense;
 	if( entity === g_player ) {
 		attackRoll *= g_attackBuff;
 		defenseRoll *= g_defenseBuff;
@@ -1060,6 +1069,8 @@ function combatStrike( entity, target, isRange, missleName ) {
 		attackRoll *= g_defenseBuff;
 		defenseRoll *= g_attackBuff;
 	}
+	attackRoll = Math.round( attackRoll );
+	defenseRoll = Math.round( defenseRoll );
 	if( attackRoll > defenseRoll ) {
 		const damage = attackRoll - defenseRoll;
 		target.hitPoints -= damage;

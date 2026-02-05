@@ -48,7 +48,7 @@ const ITEMS = {
 		"stackable": true,
 		"plural": "waters",
 		"article": "a bottle of",
-		"thirst": 50
+		"thirst": 65
 	},
 	
 	// Potions

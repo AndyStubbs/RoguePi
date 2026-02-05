@@ -78,6 +78,12 @@ const g_player = ( function () {
 		const torches = structuredClone( ITEMS.torch );
 		torches.quantity = 3;
 		g_player.items.push( torches );
+		const water = structuredClone( ITEMS.water );
+		water.quantity = 2;
+		g_player.items.push( water );
+		const rations = structuredClone( ITEMS.ration );
+		rations.quantity = 1;
+		g_player.items.push( rations );
 	}
 
 	function resetMap( width, height ) {

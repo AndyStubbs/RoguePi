@@ -25,7 +25,7 @@ const ITEMS = {
 		"stackable": true,
 		"plural": "torches",
 		"lightRadius": 3,
-		"lightFade": 0.01
+		"lightFade": 0.005
 	},
 	"ration": {
 		"name": "ration",
@@ -42,7 +42,7 @@ const ITEMS = {
 		"name": "water",
 		"symbol": "~",
 		"cost": 2,
-		"dropValue": 50,
+		"dropValue": 60,
 		"levels": [ 0, 99 ],
 		"color": 9,
 		"stackable": true,
@@ -53,7 +53,8 @@ const ITEMS = {
 	
 	// Potions
 	"healing_potion": {
-		"name": "healing potion",
+		"name": "health potion",
+		"shortName": "heal",
 		"symbol": String.fromCharCode( 6 ),
 		"healing_power": 20,
 		"cost": 50,
@@ -72,6 +73,7 @@ const ITEMS = {
 		"cost": 250,
 		"dropValue": 5,
 		"levels": [ 0, 99 ],
+		"stackable": true,
 		"color": 4,
 		"article": "a"
 	},
@@ -81,6 +83,7 @@ const ITEMS = {
 		"cost": 175,
 		"dropValue": 5,
 		"levels": [ 0, 99 ],
+		"stackable": true,
 		"color": 13,
 		"article": "a"
 	},
@@ -90,6 +93,7 @@ const ITEMS = {
 		"cost": 125,
 		"dropValue": 5,
 		"levels": [ 0, 99 ],
+		"stackable": true,
 		"color": 11,
 		"article": "a"
 	},
@@ -99,6 +103,7 @@ const ITEMS = {
 		"cost": 300,
 		"dropValue": 3,
 		"levels": [ 0, 99 ],
+		"stackable": true,
 		"color": 10,
 		"article": "a"
 	},
@@ -110,7 +115,7 @@ const ITEMS = {
 		"weapon": "melee",
 		"cost": 10,
 		"attack": 2,
-		"dropValue": 30,
+		"dropValue": 20,
 		"levels": [ 0, 99 ],
 		"color": 42
 	},
@@ -265,11 +270,12 @@ const ITEMS = {
 		"attack": 25,
 		"dropValue": 5,
 		"levels": [ 13, 99 ],
-		"color": 31,
+		"color": 15,
 		"article": "an"
 	},
 	"sword_of_matt": {
 		"name": "sword of matt",
+		"shortName": "mattsword",
 		"symbol": "/",
 		"weapon": "melee",
 		"cost": 1000,
@@ -326,7 +332,7 @@ const ITEMS = {
 		"attack": 10,
 		"dropValue": 20,
 		"levels": [ 13, 99 ],
-		"color": 31,
+		"color": 15,
 		"distance": 11
 	},
 
@@ -352,6 +358,7 @@ const ITEMS = {
 		"attack": 3,
 		"dropValue": 25,
 		"levels": [ 5, 99 ],
+		"stackable": true,
 		"color": 89,
 		"distance": 4
 	},
@@ -363,6 +370,7 @@ const ITEMS = {
 		"attack": 4,
 		"dropValue": 20,
 		"levels": [ 11, 99 ],
+		"stackable": true,
 		"color": 31,
 		"distance": 6
 	},
@@ -374,7 +382,8 @@ const ITEMS = {
 		"attack": 5,
 		"dropValue": 5,
 		"levels": [ 13, 99 ],
-		"color": 31,
+		"stackable": true,
+		"color": 15,
 		"distance": 7
 	},
 
@@ -402,6 +411,7 @@ const ITEMS = {
 		"attack": 2,
 		"dropValue": 25,
 		"levels": [ 9, 99 ],
+		"stackable": true,
 		"color": 89,
 		"distance": 1
 	},
@@ -412,8 +422,9 @@ const ITEMS = {
 		"weapon": "missile",
 		"cost": 50,
 		"attack": 3,
-		"dropValue": 20,
+		"dropValue": 10,
 		"levels": [ 13, 99 ],
+		"stackable": true,
 		"color": 31,
 		"distance": 2
 	},
@@ -425,9 +436,9 @@ const ITEMS = {
 		"armor": "body",
 		"cost": 2,
 		"defense": 1,
-		"dropValue": 50,
+		"dropValue": 20,
 		"levels": [ 0, 99 ],
-		"color": 42
+		"color": 13
 	},
 	"leather_armor": {
 		"name": "leather armor",
@@ -437,7 +448,7 @@ const ITEMS = {
 		"defense": 5,
 		"dropValue": 15,
 		"levels": [ 1, 99 ],
-		"color": 42
+		"color": 114
 	},
 	"bronze_armor": {
 		"name": "bronze armor",
@@ -457,7 +468,7 @@ const ITEMS = {
 		"defense": 15,
 		"dropValue": 10,
 		"levels": [ 10, 99 ],
-		"color": 42
+		"color": 7
 	},
 	"silver_armor": {
 		"name": "silver armor",
@@ -467,14 +478,14 @@ const ITEMS = {
 		"defense": 22,
 		"dropValue": 5,
 		"levels": [ 13, 99 ],
-		"color": 42
+		"color": 15
 	},
 	"pi_amulet": {
 		"name": "Pi Amulet",
 		"symbol": String.fromCharCode( 227 ),
 		"levels": [ 20, 99 ],
 		"dropValue": 0,
-		"cost": 1000,
+		"cost": 2500,
 		"color": 14,
 		"article": "the"
 	}

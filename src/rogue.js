@@ -438,6 +438,9 @@ function renderStats() {
 		let itemText = g_util.properName( item.name );
 		if( item.quantity > 1 ) {
 			itemText += ` (${item.quantity})`;
+			if( itemText.length >= OFFSET_X ) {
+				itemText = `${item.shortName} (${item.quantity})`;
+			}
 		}
 		if( item.equipped ) {
 			printStat( i, itemText, 10, 2 );

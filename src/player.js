@@ -11,7 +11,7 @@ const g_player = ( function () {
 		"Hero",
 		"Legend"
 	];
-	const LEVELS =     [ 0, 10, 25, 60, 100, 150,   500, 1000 ];
+	const LEVELS =     [ 0,  10, 25, 60, 100, 250,  500, 99999 ];
 	const HIT_POINTS = [ 15, 20, 35, 50,  65,  85,  100, 150 ];
 	const HEALING_RATE = 0.01;
 
@@ -22,7 +22,7 @@ const g_player = ( function () {
 		"depth": 1,
 		"lastShop": 1,
 		"experience": 0,
-		"gold": 100,
+		"gold": 10,
 		"attack": 1,
 		"range": 0,
 		"defense": 1,

@@ -126,5 +126,3 @@ window.g_intro = ( function () {
 		startLevel();
 	}
 } )();
-
-g_intro.runIntro();

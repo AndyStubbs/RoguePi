@@ -20,6 +20,10 @@ $.setScreen( g_mainScreen );
 
 let g_level;
 
+$.ready( () => {
+	g_intro.runIntro();
+} );
+
 function startLevel() {
 	g_level = g_dungeonMap.createMap( $.getCols() - OFFSET_X, $.getRows(), g_player.depth );
 	g_player.fn.resetMap( $.getCols() - OFFSET_X, $.getRows() );
@@ -360,6 +364,12 @@ function addGameKeys() {
 		endTurn();
 		render();
 	}, false, true );
+
+	//$.onkey( "t", "down", () => {
+	//	g_player.x = g_level.exitLocation.x - 1;
+	//	g_player.y = g_level.exitLocation.y;
+	//	move( 1, 0 );
+	//} );
 }
 
 function move( dx, dy ) {

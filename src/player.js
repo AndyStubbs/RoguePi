@@ -19,7 +19,7 @@ const g_player = ( function () {
 		"name": "Player 1 Huzzaah",
 		"level": 1,
 		"rank": RANKS[ 0 ],
-		"depth": 20,
+		"depth": 1,
 		"lastShop": 1,
 		"experience": 0,
 		"gold": 100,
@@ -67,24 +67,17 @@ const g_player = ( function () {
 		// Give the player some starting items
 		const club = structuredClone( ITEMS.wooden_club );
 		club.quantity = 1;
+		club.equipped = true;
 		g_player.items.push( club );
+		g_player.weapons.melee = club;
 		const clothes = structuredClone( ITEMS.cloth_armor );
 		clothes.quantity = 1;
+		clothes.equipped = true;
 		g_player.items.push( clothes );
+		g_player.armor.body = clothes;
 		const torches = structuredClone( ITEMS.torch );
 		torches.quantity = 3;
 		g_player.items.push( torches );
-
-		// Give ranged items
-		const bow = structuredClone( ITEMS.bow );
-		bow.quantity = 1;
-		g_player.items.push( bow );
-		const arrow = structuredClone( ITEMS.arrow );
-		arrow.quantity = 5;
-		g_player.items.push( arrow );
-		const dart = structuredClone( ITEMS.dart );
-		dart.quantity = 5;
-		g_player.items.push( dart );
 	}
 
 	function resetMap( width, height ) {

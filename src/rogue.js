@@ -23,7 +23,7 @@ let g_level;
 function startLevel() {
 	g_level = g_dungeonMap.createMap( $.getCols() - OFFSET_X, $.getRows(), g_player.depth );
 	g_player.fn.resetMap( $.getCols() - OFFSET_X, $.getRows() );
-	g_player.fn.revealMap( g_level );
+	//g_player.fn.revealMap( g_level );
 	g_player.x = g_level.startLocation.x;
 	g_player.y = g_level.startLocation.y;
 	addGameKeys();
@@ -54,11 +54,11 @@ function render() {
 
 	// Render exit
 	const exitTileId = `${g_level.exitLocation.x},${g_level.exitLocation.y}`;
-	//if( litTiles[ exitTileId ] ) {
+	if( litTiles[ exitTileId ] ) {
 		$.setPos( g_level.exitLocation.x + OFFSET_X, g_level.exitLocation.y );
 		$.setColor( 7 );
 		$.print( TILE_EXIT, true );
-	//}
+	}
 
 	// Render enemies
 	for( const enemy of g_level.enemies ) {
@@ -88,7 +88,7 @@ function render() {
 	g_player.messages = [];
 
 	// Check player game over
-	if( g_player.hitPoints === 0 ) {
+	if( g_player.hitPoints <= 0 ) {
 		$.clearEvents();
 		setTimeout( () => {
 			showGameOverAnimation();
@@ -685,6 +685,13 @@ async function useItem( itemIndex ) {
 			if( item.quantity === 0 ) {
 				g_player.items.splice( itemIndex, 1 );
 			}
+		} else if( item.healing_power ) {
+			g_player.hitPoints = Math.min( g_player.hitPoints + item.healing_power, g_player.maxHitPoints );
+			g_player.messages.push( `You drink ${item.article} ${item.name}.` );
+			item.quantity -= 1;
+			if( item.quantity === 0 ) {
+				g_player.items.splice( itemIndex, 1 );
+			}
 		}
 		endTurn();
 		render();
@@ -929,8 +936,15 @@ function endTurn() {
 		g_player.messages.push( "You are getting thirsty." );
 	}
 
-	if( g_player.hitPoints === 0 ) {
+	if( g_player.hitPoints <= 0 ) {
 		g_player.messages.push( `You have died.` );
+		if( g_player.hunger >= 100 ) {
+			g_player.killedBy = "starvation";
+		} else if( g_player.thirst >= 100 ) {
+			g_player.killedBy = "thirst";
+		} else {
+			g_player.killedBy = "something";
+		}
 		return;
 	}
 
@@ -1015,7 +1029,7 @@ function endTurn() {
 			enemy.y = lastPosition.y;
 
 			// Stop all other enemy movements if player is dead
-			if( g_player.hitPoints === 0 ) {
+			if( g_player.hitPoints <= 0 ) {
 				return;
 			}
 		}

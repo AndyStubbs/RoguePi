@@ -63,7 +63,7 @@ window.g_intro = ( function () {
 		const name = await $.input( "Enter your name: ", null, null, null, null, null, 16 );
 		const playerName = ( name != null && String( name ).trim() !== "" )
 			? String( name ).trim()
-			: "Adventurer";
+			: "The Rogue";
 		g_player.name = playerName;
 
 		g_player.fn.init();

@@ -4,7 +4,7 @@
 window.g_dungeonMap = ( function () {
 	const HIDDEN_DOOR_CHANCE = 0.025;
 	const HIDDEN_PATH_CHANCE = 0.0025;
-	const ROOM_ITEM_DROP_CHANCE = 0.9;
+	const ROOM_ITEM_DROP_CHANCE = 0.5;
 	const ROOM_BEND_CHANCE = 0.5;
 	const ENEMY_SPAWN_CHANCE = 0.65;
 	const MAX_DEPTH = 20;
@@ -83,7 +83,7 @@ window.g_dungeonMap = ( function () {
 		const rooms = generateRooms( map, width, height );
 		if( rooms.length < 3 ) {
 			if( attempts >= MAX_MAP_ATTEMPTS ) {
-				console.warn( "Map rooms < 3, but max attempts reached – keeping map." );
+				throw new Error( "Map rooms < 3, but max attempts reached" );
 			} else {
 				return createMap( width, height, depth, attempts + 1 );
 			}
@@ -123,7 +123,7 @@ window.g_dungeonMap = ( function () {
 		// Validate the doors
 		if( !doorData.isValid ) {
 			if( attempts >= MAX_MAP_ATTEMPTS ) {
-				console.warn( "Door validation failed, but max attempts reached – keeping map." );
+				throw new Error( "Door validation failed, but max attempts reached" );
 			} else {
 				return createMap( width, height, depth, attempts + 1 );
 			}
@@ -135,7 +135,7 @@ window.g_dungeonMap = ( function () {
 		if( depth === MAX_DEPTH ) {
 			specialRoom = rooms.find( r => r.isSpecialRoom );
 			if( specialRoom ) {
-				const piAmulet = g_items.getItemByKey( "pi_amulet" );
+				const piAmulet = ITEMS.pi_amulet;
 				piAmulet.quantity = 1;
 				piAmulet.x = specialRoom.x + 4;
 				piAmulet.y = specialRoom.y + 3;
@@ -162,14 +162,13 @@ window.g_dungeonMap = ( function () {
 		const isValid = validateMap( map, startData.startLocation, targetLocation );
 		if( !isValid ) {
 			if( attempts >= MAX_MAP_ATTEMPTS ) {
-				console.warn( "validateMap failed, but max attempts reached – keeping map." );
+				throw new Error( "validateMap failed, but max attempts reached" );
 			} else {
 				return createMap( width, height, depth, attempts + 1 );
 			}
 		}
 
 		console.log( "Map is valid!" );
-
 		return {
 			"map": map,
 			"rooms": rooms,
@@ -717,9 +716,10 @@ window.g_dungeonMap = ( function () {
 		for( let y = 0; y < map.length; y += 1 ) {
 			for( let x = 0; x < map[ y ].length; x += 1 ) {
 				const tile = map[ y ][ x ];
-				if( tile === " " ) {
+				if( tile === TILE_BLANK || tile === TILE_HIDDEN_PATH ) {
 					continue;
 				}
+
 				$.setPos( OFFSET_X + x, y );
 				let colorSet;
 				if( colors[ tile ] ) {
@@ -732,7 +732,12 @@ window.g_dungeonMap = ( function () {
 				} else {
 					$.setColor( colorSet[ 1 ] );
 				}
-				$.print( tile, true );
+				if( tile === TILE_HIDDEN_DOOR ) {
+					const room = getRoom( g_level.rooms, x, y );
+					$.print( getWallDirection( room, x, y ), true );
+				} else {
+					$.print( tile, true );
+				}
 			}
 		}
 	}

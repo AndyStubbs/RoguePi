@@ -11,7 +11,7 @@ const ITEMS = {
 		"name": ITEM_GOLD,
 		"symbol": "*",
 		"cost": 1,
-		"dropValue": 80,
+		"dropValue": 100,
 		"levels": [ 0, 99 ],
 		"color": 14
 	},
@@ -19,7 +19,7 @@ const ITEMS = {
 		"name": ITEM_TORCH,
 		"symbol": "!",
 		"cost": 3,
-		"dropValue": 30,
+		"dropValue": 40,
 		"levels": [ 0, 99 ],
 		"color": 40,
 		"stackable": true,
@@ -31,9 +31,9 @@ const ITEMS = {
 		"name": "ration",
 		"symbol": "%",
 		"cost": 5,
-		"dropValue": 20,
+		"dropValue": 40,
 		"levels": [ 0, 99 ],
-		"color": 2,
+		"color": 42,
 		"stackable": true,
 		"plural": "rations",
 		"hunger": 50
@@ -42,7 +42,7 @@ const ITEMS = {
 		"name": "water",
 		"symbol": "~",
 		"cost": 2,
-		"dropValue": 20,
+		"dropValue": 50,
 		"levels": [ 0, 99 ],
 		"color": 9,
 		"stackable": true,
@@ -50,39 +50,234 @@ const ITEMS = {
 		"article": "a bottle of",
 		"thirst": 50
 	},
+	
+	// Potions
+	"healing_potion": {
+		"name": "healing potion",
+		"symbol": String.fromCharCode( 6 ),
+		"healing_power": 20,
+		"cost": 50,
+		"dropValue": 20,
+		"levels": [ 0, 99 ],
+		"stackable": true,
+		"plural": "potions of healing",
+		"color": 45,
+		"article": "a"
+	},
+	
+	// Gems
+	"ruby": {
+		"name": "ruby",
+		"symbol": String.fromCharCode( 3 ),
+		"cost": 250,
+		"dropValue": 5,
+		"levels": [ 0, 99 ],
+		"color": 4,
+		"article": "a"
+	},
+	"sapphire": {
+		"name": "sapphire",
+		"symbol": String.fromCharCode( 15 ),
+		"cost": 175,
+		"dropValue": 5,
+		"levels": [ 0, 99 ],
+		"color": 13,
+		"article": "a"
+	},
+	"emerald": {
+		"name": "emerald",
+		"symbol": String.fromCharCode( 6 ),
+		"cost": 125,
+		"dropValue": 5,
+		"levels": [ 0, 99 ],
+		"color": 11,
+		"article": "a"
+	},
+	"diamond": {
+		"name": "diamond",
+		"symbol": String.fromCharCode( 4 ),
+		"cost": 300,
+		"dropValue": 3,
+		"levels": [ 0, 99 ],
+		"color": 10,
+		"article": "a"
+	},
 
 	// Weapons
 	"wooden_club": {
 		"name": "wooden club",
-		"symbol": "/",
+		"symbol": String.fromCharCode( 28 ),
 		"weapon": "melee",
 		"cost": 10,
 		"attack": 2,
-		"dropValue": 50,
+		"dropValue": 30,
 		"levels": [ 0, 99 ],
 		"color": 42
+	},
+	"bronze_dagger": {
+		"name": "bronze dagger",
+		"symbol": String.fromCharCode( 170 ),
+		"weapon": "melee",
+		"cost": 20,
+		"attack": 3,
+		"dropValue": 20,
+		"levels": [ 0, 99 ],
+		"color": 38,
+		"article": "an"
+	},
+	"bronze_spear": {
+		"name": "bronze spear",
+		"symbol": String.fromCharCode( 24 ),
+		"weapon": "melee",
+		"cost": 30,
+		"attack": 5,
+		"dropValue": 20,
+		"levels": [ 1, 99 ],
+		"color": 38,
+		"article": "an"
+	},
+	"bronze_mace": {
+		"name": "bronze mace",
+		"symbol": String.fromCharCode( 23 ),
+		"weapon": "melee",
+		"cost": 35,
+		"attack": 6,
+		"dropValue": 20,
+		"levels": [ 2, 99 ],
+		"color": 38,
+		"article": "an"
+	},
+	"bronze_sword": {
+		"name": "bronze sword",
+		"symbol": "/",
+		"weapon": "melee",
+		"cost": 40,
+		"attack": 7,
+		"dropValue": 10,
+		"levels": [ 3, 99 ],
+		"color": 38,
+		"article": "an"
+	},
+	"iron_spear": {
+		"name": "iron spear",
+		"symbol": String.fromCharCode( 24 ),
+		"weapon": "melee",
+		"cost": 50,
+		"attack": 8,
+		"dropValue": 10,
+		"levels": [ 4, 99 ],
+		"color": 7,
+		"article": "an"
 	},
 	"iron_mace": {
 		"name": "iron mace",
 		"symbol": "@",
 		"weapon": "melee",
-		"cost": 30,
-		"attack": 3,
+		"cost": 55,
+		"attack": 9,
 		"dropValue": 10,
-		"levels": [ 0, 99 ],
+		"levels": [ 5, 99 ],
 		"color": 7,
 		"article": "an"
 	},
 	"iron_sword": {
 		"name": "iron sword",
-		"symbol": "|",
+		"symbol": "/",
 		"weapon": "melee",
-		"cost": 80,
-		"attack": 4,
+		"cost": 75,
+		"attack": 12,
 		"dropValue": 5,
-		"levels": [ 0, 99 ],
+		"levels": [ 6, 99 ],
 		"color": 7,
 		"article": "an"
+	},
+	"iron_axe": {
+		"name": "iron axe",
+		"symbol": String.fromCharCode( 225 ),
+		"weapon": "melee",
+		"cost": 100,
+		"attack": 15,
+		"dropValue": 5,
+		"levels": [ 7, 99 ],
+		"color": 7,
+		"article": "an"
+	},
+	"iron_hammer": {
+		"name": "iron hammer",
+		"symbol": String.fromCharCode( 226 ),
+		"weapon": "melee",
+		"cost": 110,
+		"attack": 16,
+		"dropValue": 5,
+		"levels": [ 8, 99 ],
+		"color": 7,
+		"article": "an"
+	},
+	"warhammer": {
+		"name": "warhammer",
+		"symbol": String.fromCharCode( 226 ),
+		"weapon": "melee",
+		"cost": 120,
+		"attack": 17,
+		"dropValue": 5,
+		"levels": [ 9, 99 ],
+		"color": 89,
+		"article": "an"
+	},
+	"waraxe": {
+		"name": "waraxe",
+		"symbol": String.fromCharCode( 225 ),
+		"weapon": "melee",
+		"cost": 130,
+		"attack": 18,
+		"dropValue": 5,
+		"levels": [ 10, 99 ],
+		"color": 89,
+		"article": "an"
+	},
+	"greatsword": {
+		"name": "greatsword",
+		"symbol": "/",
+		"weapon": "melee",
+		"cost": 150,
+		"attack": 20,
+		"dropValue": 5,
+		"levels": [ 11, 99 ],
+		"color": 31,
+		"article": "an"
+	},
+	"greataxe": {
+		"name": "greataxe",
+		"symbol": String.fromCharCode( 225 ),
+		"weapon": "melee",
+		"cost": 160,
+		"attack": 21,
+		"dropValue": 5,
+		"levels": [ 12, 99 ],
+		"color": 31,
+		"article": "an"
+	},
+	"silver_sword": {
+		"name": "silver sword",
+		"symbol": "/",
+		"weapon": "melee",
+		"cost": 350,
+		"attack": 25,
+		"dropValue": 5,
+		"levels": [ 13, 99 ],
+		"color": 31,
+		"article": "an"
+	},
+	"sword_of_matt": {
+		"name": "sword of matt",
+		"symbol": "/",
+		"weapon": "melee",
+		"cost": 1000,
+		"attack": 30,
+		"dropValue": 1,
+		"levels": [ 14, 99 ],
+		"color": 31,
+		"article": "the"
 	},
 
 	// Ranged Weapons
@@ -98,6 +293,44 @@ const ITEMS = {
 		"color": 5,
 		"distance": 5
 	},
+	"warbow": {
+		"name": "warbow",
+		"symbol": ")",
+		"weapon": "range",
+		"missileType": "arrow",
+		"cost": 150,
+		"attack": 5,
+		"dropValue": 25,
+		"levels": [ 5, 99 ],
+		"color": 89,
+		"distance": 7
+	},
+	"greatbow": {
+		"name": "greatbow",
+		"symbol": ")",
+		"weapon": "range",
+		"missileType": "arrow",
+		"cost": 200,
+		"attack": 7,
+		"dropValue": 20,
+		"levels": [ 11, 99 ],
+		"color": 31,
+		"distance": 9
+	},
+	"silver_bow": {
+		"name": "silver bow",
+		"symbol": ")",
+		"weapon": "range",
+		"missileType": "arrow",
+		"cost": 350,
+		"attack": 10,
+		"dropValue": 20,
+		"levels": [ 13, 99 ],
+		"color": 31,
+		"distance": 11
+	},
+
+	// Darts
 	"dart": {
 		"name": "dart",
 		"symbol": "`",
@@ -111,12 +344,45 @@ const ITEMS = {
 		"article": "a",
 		"distance": 4
 	},
+	"javelin": {
+		"name": "javelin",
+		"symbol": String.fromCharCode( 92 ),
+		"weapon": "range",
+		"cost": 50,
+		"attack": 3,
+		"dropValue": 25,
+		"levels": [ 5, 99 ],
+		"color": 89,
+		"distance": 4
+	},
+	"great_javelin": {
+		"name": "great javelin",
+		"symbol": String.fromCharCode( 92 ),
+		"weapon": "range",
+		"cost": 100,
+		"attack": 4,
+		"dropValue": 20,
+		"levels": [ 11, 99 ],
+		"color": 31,
+		"distance": 6
+	},
+	"silver_javelin": {
+		"name": "silver javelin",
+		"symbol": String.fromCharCode( 92 ),
+		"weapon": "range",
+		"cost": 150,
+		"attack": 5,
+		"dropValue": 5,
+		"levels": [ 13, 99 ],
+		"color": 31,
+		"distance": 7
+	},
 
 	// Missiles
 	"arrow": {
 		"name": "arrow",
 		"missileType": "arrow",
-		"symbol": "-",
+		"symbol": String.fromCharCode( 27 ),
 		"weapon": "missile",
 		"cost": 5,
 		"attack": 1,
@@ -126,6 +392,30 @@ const ITEMS = {
 		"stackable": true,
 		"article": "an",
 		"distance": 1
+	},
+	"war_arrow": {
+		"name": "war arrow",
+		"missileType": "arrow",
+		"symbol": String.fromCharCode( 27 ),
+		"weapon": "missile",
+		"cost": 25,
+		"attack": 2,
+		"dropValue": 25,
+		"levels": [ 9, 99 ],
+		"color": 89,
+		"distance": 1
+	},
+	"silver_arrow": {
+		"name": "silver arrow",
+		"missileType": "arrow",
+		"symbol": String.fromCharCode( 27 ),
+		"weapon": "missile",
+		"cost": 50,
+		"attack": 3,
+		"dropValue": 20,
+		"levels": [ 13, 99 ],
+		"color": 31,
+		"distance": 2
 	},
 
 	// Armor
@@ -144,9 +434,19 @@ const ITEMS = {
 		"symbol": "&",
 		"armor": "body",
 		"cost": 20,
-		"defense": 2,
+		"defense": 5,
 		"dropValue": 15,
-		"levels": [ 0, 99 ],
+		"levels": [ 1, 99 ],
+		"color": 42
+	},
+	"bronze_armor": {
+		"name": "bronze armor",
+		"symbol": "&",
+		"armor": "body",
+		"cost": 40,
+		"defense": 8,
+		"dropValue": 10,
+		"levels": [ 5, 99 ],
 		"color": 42
 	},
 	"iron_armor": {
@@ -154,11 +454,20 @@ const ITEMS = {
 		"symbol": "&",
 		"armor": "body",
 		"cost": 100,
-		"defense": 5,
+		"defense": 15,
 		"dropValue": 10,
-		"levels": [ 0, 99 ],
-		"color": 42,
-		"article": "an"
+		"levels": [ 10, 99 ],
+		"color": 42
+	},
+	"silver_armor": {
+		"name": "silver armor",
+		"symbol": "&",
+		"armor": "body",
+		"cost": 200,
+		"defense": 22,
+		"dropValue": 5,
+		"levels": [ 13, 99 ],
+		"color": 42
 	},
 	"pi_amulet": {
 		"name": "Pi Amulet",
@@ -183,45 +492,10 @@ const ALL_ITEMS = Object.values( ITEMS ).map( item => {
 
 window.g_items = ( function () {
 	return {
-		"getItemDrop": getItemDrop,
-		"getAllItems": getAllItems,
-		"getItemByKey": getItemByKey
+		"getItemDrop": getItemDrop
 	};
 
-	function normalizeItems( items ) {
-
-		const allItems = Object.values( items );
-
-		for( const item of allItems ) {
-			if( !item.plural ) {
-				item.plural = item.name + "s";
-			}
-			if( !item.article ) {
-				item.article = "a";
-			}
-		}
-
-		return allItems;
-	}
-
-	function getAllItems() {
-
-		return ALL_ITEMS;
-	}
-
-	function getItemByKey( key ) {
-
-		const item = ITEMS[ key ];
-
-		if( !item ) {
-			return null;
-		}
-
-		return structuredClone( item );
-	}
-
 	function getItemDrop( level, allowGold ) {
-
 		const availableItems = [];
 		let maxItemDropValue = 0;
 

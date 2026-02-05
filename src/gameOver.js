@@ -212,13 +212,17 @@ window.g_gameOver = ( function () {
 		let isCurrentScoreInTop10 = false;
 		for( let i = 0; i < tableLines.length; i++ ) {
 			const isCurrentRow = i > 0 && highScores[ i - 1 ].scoreId === currentScoreId;
-			$.setColor( i === 0 ? colorHeader : ( isCurrentRow ? colorCurrentRow : colorRow ) );
+			if( isCurrentRow ) {
+				isCurrentScoreInTop10 = true;
+				$.setColor( colorCurrentRow );
+			} else if( i === 0 ) {
+				$.setColor( colorHeader );
+			} else {
+				$.setColor( colorHint );
+			}
 			$.setPos( leftPad + 5, row );
 			$.print( tableLines[ i ], true );
 			row += 1;
-			if( isCurrentRow ) {
-				isCurrentScoreInTop10 = true;
-			}
 		}
 
 		if( !isCurrentScoreInTop10 ) {
@@ -230,7 +234,7 @@ window.g_gameOver = ( function () {
 				"survived": survived,
 				"killedBy": deathCause
 			}, null );
-			$.setColor( colorHint );
+			$.setColor( colorCurrentRow );
 			$.setPos( leftPad + 5, row );
 			$.print( newLine, true );
 			row += 2;

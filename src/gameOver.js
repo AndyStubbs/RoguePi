@@ -8,7 +8,7 @@ window.g_gameOver = ( function () {
 	const NAME_COL_W = 16;     // player name
 	const TITLE_COL_W = 10;     // level rank title (Novice, Adventurer, etc.)
 	const SCORE_COL_W = 8;
-	const SYMBOL_COL_W = 1;
+	const PI_COL_W = 2;  // PI symbol or depth (min 2 digits)
 	const RESULT_COL_W = 22;
 	const PI_SYMBOL = String.fromCharCode( 227 );
 
@@ -59,14 +59,15 @@ window.g_gameOver = ( function () {
 				"name": entry.name != null ? String( entry.name ) : "Adventurer",
 				"killedBy": entry.killedBy != null ? String( entry.killedBy ) : "",
 				"scoreId": entry.scoreId != null ? entry.scoreId : null,
-				"rank": entry.rank != null ? String( entry.rank ) : ""
+				"rank": entry.rank != null ? String( entry.rank ) : "",
+				"depth": entry.depth != null ? entry.depth : null
 			} ) );
 		} catch ( e ) {
 			return [];
 		}
 	}
 
-	function saveHighScore( score, survived, name, killedBy, scoreId, rank ) {
+	function saveHighScore( score, survived, name, killedBy, scoreId, rank, depth ) {
 		const list = getHighScores();
 		list.push( {
 			"score": score,
@@ -74,7 +75,8 @@ window.g_gameOver = ( function () {
 			"name": name != null ? String( name ).trim() || "Adventurer" : "Adventurer",
 			"killedBy": killedBy != null ? String( killedBy ).trim() : "",
 			"scoreId": scoreId != null ? scoreId : Date.now(),
-			"rank": rank != null ? String( rank ).trim() : ""
+			"rank": rank != null ? String( rank ).trim() : "",
+			"depth": depth != null ? depth : null
 		} );
 		list.sort( ( a, b ) => b.score - a.score );
 		const trimmed = list.slice( 0, MAX_HIGH_SCORES );
@@ -90,7 +92,8 @@ window.g_gameOver = ( function () {
 		const deathCause = ( killedBy != null ? String( killedBy ).trim() : "" ) || ( g_player.killedBy != null ? String( g_player.killedBy ).trim() : "" );
 		const currentScoreId = Date.now();
 		const playerRank = g_player.rank != null ? String( g_player.rank ).trim() : "";
-		saveHighScore( score, survived, playerName, deathCause, currentScoreId, playerRank );
+		const playerDepth = g_player.depth != null ? g_player.depth : null;
+		saveHighScore( score, survived, playerName, deathCause, currentScoreId, playerRank, playerDepth );
 
 		const cols = $.getCols();
 		const rows = $.getRows();
@@ -197,7 +200,7 @@ window.g_gameOver = ( function () {
 			"Name".padEnd( NAME_COL_W ) + " " +
 			"Rank".padEnd( TITLE_COL_W ) + " " +
 			"Score".padStart( SCORE_COL_W ) + " " +
-			PI_SYMBOL.padEnd( SYMBOL_COL_W ) + " " +
+			PI_SYMBOL.padEnd( PI_COL_W ) + " " +
 			"Result".padEnd( RESULT_COL_W );
 
 		const tableLines = [ headerStr ];
@@ -232,7 +235,8 @@ window.g_gameOver = ( function () {
 				"rank": playerRank,
 				"score": score,
 				"survived": survived,
-				"killedBy": deathCause
+				"killedBy": deathCause,
+				"depth": playerDepth
 			}, null );
 			$.setColor( colorCurrentRow );
 			$.setPos( leftPad + 5, row );
@@ -260,7 +264,9 @@ window.g_gameOver = ( function () {
 			? rankTitleRaw.substring( 0, TITLE_COL_W - 1 ) + "."
 			: rankTitleRaw.padEnd( TITLE_COL_W );
 		const scoreStr = entry.score.toString().padStart( SCORE_COL_W );
-		const symbolStr = entry.survived ? PI_SYMBOL : "-";
+		const symbolStr = entry.survived
+			? ( PI_SYMBOL + " " ).padEnd( PI_COL_W )
+			: ( entry.depth != null ? String( entry.depth ).padStart( 2, "0" ) : "--" );
 		const resultText = entry.survived
 			? "Survived"
 			: ( "Killed by " + ( entry.killedBy || "?" ) );

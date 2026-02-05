@@ -53,7 +53,7 @@ window.g_enemies = ( function () {
 			"attack": 7,
 			"defense": 12,
 			"vision": 10,
-			"levels": [ 0, 10 ],
+			"levels": [ 2, 10 ],
 			"spawnValue": 5,
 			"experience": 10,
 			"loot": []
@@ -66,7 +66,7 @@ window.g_enemies = ( function () {
 			"attack": 10,
 			"defense": 5,
 			"vision": 3,
-			"levels": [ 2, 10 ],
+			"levels": [ 3, 10 ],
 			"spawnValue": 10,
 			"experience": 12,
 			"loot": []
@@ -79,7 +79,7 @@ window.g_enemies = ( function () {
 			"attack": 18,
 			"defense": 12,
 			"vision": 5,
-			"levels": [ 3, 15 ],
+			"levels": [ 5, 15 ],
 			"spawnValue": 10,
 			"experience": 15,
 			"loot": []
@@ -92,7 +92,7 @@ window.g_enemies = ( function () {
 			"attack": 18,
 			"defense": 15,
 			"vision": 5,
-			"levels": [ 4, 15 ],
+			"levels": [ 5, 15 ],
 			"spawnValue": 15,
 			"experience": 20,
 			"loot": []
@@ -105,7 +105,7 @@ window.g_enemies = ( function () {
 			"attack": 25,
 			"defense": 15,
 			"vision": 5,
-			"levels": [ 5, 15 ],
+			"levels": [ 7, 15 ],
 			"spawnValue": 15,
 			"experience": 20,
 			"loot": []
@@ -118,7 +118,7 @@ window.g_enemies = ( function () {
 			"attack": 25,
 			"defense": 15,
 			"vision": 11,
-			"levels": [ 6, 15 ],
+			"levels": [ 7, 15 ],
 			"spawnValue": 5,
 			"experience": 50,
 			"loot": []
@@ -131,7 +131,7 @@ window.g_enemies = ( function () {
 			"attack": 30,
 			"defense": 20,
 			"vision": 5,
-			"levels": [ 7, 15 ],
+			"levels": [ 8, 15 ],
 			"spawnValue": 10,
 			"experience": 50,
 			"loot": []
@@ -144,7 +144,7 @@ window.g_enemies = ( function () {
 			"attack": 30,
 			"defense": 25,
 			"vision": 5,
-			"levels": [ 8, 15 ],
+			"levels": [ 9, 15 ],
 			"spawnValue": 5,
 			"experience": 75,
 			"loot": []
@@ -157,7 +157,7 @@ window.g_enemies = ( function () {
 			"attack": 30,
 			"defense": 20,
 			"vision": 5,
-			"levels": [ 9, 99 ],
+			"levels": [ 10, 99 ],
 			"spawnValue": 10,
 			"experience": 50,
 			"loot": []

@@ -45,7 +45,7 @@ window.g_gameOver = ( function () {
 
 	function getHighScores() {
 		try {
-			const raw = localStorage.getItem( HIGH_SCORES_KEY );
+			const raw = localStorage.getItem( HIGH_SCORES_KEY + "-" + g_difficulty );
 			if( !raw ) {
 				return [];
 			}
@@ -81,7 +81,7 @@ window.g_gameOver = ( function () {
 		list.sort( ( a, b ) => b.score - a.score );
 		const trimmed = list.slice( 0, MAX_HIGH_SCORES );
 		try {
-			localStorage.setItem( HIGH_SCORES_KEY, JSON.stringify( trimmed ) );
+			localStorage.setItem( HIGH_SCORES_KEY + "-" + g_difficulty, JSON.stringify( trimmed ) );
 		} catch ( e ) {}
 	}
 

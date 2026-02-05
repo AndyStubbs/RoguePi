@@ -458,7 +458,8 @@ window.g_dungeonMap = ( function () {
 				continue;
 			}
 			let count = 0;
-			while( Math.random() < ROOM_ITEM_DROP_CHANCE && count < 3 ) {
+			let itemSpawnChance = ROOM_ITEM_DROP_CHANCE * g_itemBuff;
+			while( Math.random() < itemSpawnChance && count < 3 ) {
 				count += 1;
 			}
 			for( let i = 0; i < count; i += 1 ) {

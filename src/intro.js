@@ -1,12 +1,17 @@
 "use strict";
 // File: intro.js
 
+let g_attackBuff = 1.0;
+let g_defenseBuff = 1.0;
+let g_difficulty = "normal";
+let g_itemBuff = 1.0;
+
 window.g_intro = ( function () {
 	return {
 		"runIntro": runIntro
 	};
 
-	async function runIntro() {
+	async function runIntro( isInvalidDifficulty = false ) {
 		const screen = window.g_mainScreen;
 		if( screen ) {
 			$.setScreen( screen );
@@ -55,12 +60,63 @@ window.g_intro = ( function () {
 		$.rect( 1, 1, $.width() - 2, $.height() - 2 );
 		$.rect( 3, 3, $.width() - 6, $.height() - 6 );
 
+		row += 2;
+
+		// If invalid difficulty, show error message and try again
+		if( isInvalidDifficulty ) {
+			row += 6;
+			$.setColor( 4 );
+			$.setPos( 22, row );
+			$.print( "Invalid difficulty. Please enter a valid difficulty.", true );
+			row -= 6;
+		}
+
+		// Set difficulty
+		$.setColor( colorPrompt );
+		$.setPos( 22, row );
+		$.print( "Difficulty", true );
+		$.setColor( 7 );
+		$.setPos( 22, row + 1 );
+		$.print( "1) Easy" );
+		$.setPos( 22, row + 2 );
+		$.print( "2) Normal" );
+		$.setPos( 22, row + 3 );
+		$.print( "3) Hard" );
+		row += 5;
+		$.setPos( 22, row );
+		const difficulty = await $.input( "Enter (1-3): ", null, null, null, null, null, 1 );
+		if( difficulty === "1" ) {
+			g_attackBuff = 1.5;
+			g_defenseBuff = 1.5;
+			g_itemBuff = 1.5;
+			g_difficulty = "easy";
+		} else if( difficulty === "2" ) {
+			g_attackBuff = 1.15;
+			g_defenseBuff = 1.15;
+			g_itemBuff = 1.15;
+			g_difficulty = "normal";
+		} else if( difficulty === "3" ) {
+			g_attackBuff = 0.85;
+			g_defenseBuff = 0.85;
+			g_itemBuff = 0.85;
+			g_difficulty = "hard";
+		} else {
+			return runIntro( true );
+		}
+
+		row += 2;
+
+		if( isInvalidDifficulty ) {
+			row += 2;
+		}
+
 		// Name prompt at bottom
-		row = rows - 10;
 		$.setPos( 22, row );
 		$.setColor( colorPrompt );
-
-		const name = await $.input( "Enter your name: ", null, null, null, null, null, 16 );
+		$.print( "Name", true );
+		$.setColor( 7 );
+		$.setPos( 22, row + 1 );
+		const name = await $.input( "Enter: ", null, null, null, null, null, 16 );
 		const playerName = ( name != null && String( name ).trim() !== "" )
 			? String( name ).trim()
 			: "The Rogue";

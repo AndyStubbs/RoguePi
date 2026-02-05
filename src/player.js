@@ -11,8 +11,8 @@ const g_player = ( function () {
 		"Hero",
 		"Legend"
 	];
-	const LEVELS =     [ 10, 25, 60, 100, 150, 500, 1000 ];
-	const HIT_POINTS = [ 15, 20, 35, 50,  65,  85,  100 ];
+	const LEVELS =     [ 0, 10, 25, 60, 100, 150,   500, 1000 ];
+	const HIT_POINTS = [ 15, 20, 35, 50,  65,  85,  100, 150 ];
 	const HEALING_RATE = 0.01;
 
 	return {

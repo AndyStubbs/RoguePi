@@ -408,6 +408,7 @@ function renderStats() {
 	$.print();
 	printTitle( "Depth " + g_player.depth );
 	$.print();
+	printStat( "DIF", g_util.properName( g_difficulty ), 2 );
 	$.setColor( 14 );
 	$.print();
 	printTitle( g_player.name );
@@ -942,8 +943,6 @@ function endTurn() {
 			g_player.killedBy = "starvation";
 		} else if( g_player.thirst >= 100 ) {
 			g_player.killedBy = "thirst";
-		} else {
-			g_player.killedBy = "something";
 		}
 		return;
 	}
@@ -1051,8 +1050,16 @@ function combatStrike( entity, target, isRange, missleName ) {
 	if( isRange ) {
 		attack = entity.range;
 	}
-	const attackRoll = Math.round( Math.random() * attack );
-	const defenseRoll = Math.round( Math.random() * target.defense );
+	let attackRoll = Math.round( Math.random() * attack );
+	let defenseRoll = Math.round( Math.random() * target.defense );
+	if( entity === g_player ) {
+		attackRoll *= g_attackBuff;
+		defenseRoll *= g_defenseBuff;
+	}
+	if( target === g_player ) {
+		attackRoll *= g_defenseBuff;
+		defenseRoll *= g_attackBuff;
+	}
 	if( attackRoll > defenseRoll ) {
 		const damage = attackRoll - defenseRoll;
 		target.hitPoints -= damage;

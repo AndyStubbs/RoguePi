@@ -27,14 +27,14 @@ window.g_dungeonMap = ( function () {
 
 	// Stone Walls
 	const colorSet3 = {};
-	colorSet3[ TILE_FLOOR ] = [ 23, 26 ];
+	colorSet3[ TILE_FLOOR ] = [ 7, 8 ];
 	colorSet3[ TILE_PATH ] = [ 7, 8 ]
 	colorSet3.WALLS = [ 7, 8 ];
 
 	// Fire Cave
 	const colorSet4 = {};
-	colorSet4[ TILE_FLOOR ] = [ 23, 18 ];
-	colorSet4[ TILE_PATH ] = [ 23, 18 ]
+	colorSet4[ TILE_FLOOR ] = [ 7, 8 ];
+	colorSet4[ TILE_PATH ] = [ 7, 8 ]
 	colorSet4.WALLS = [ 4, 112 ];
 
 	// Levels 1 - 6

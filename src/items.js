@@ -48,7 +48,7 @@ const ITEMS = {
 		"stackable": true,
 		"plural": "waters",
 		"article": "a bottle of",
-		"thirst": 65
+		"thirst": 70
 	},
 	
 	// Potions
@@ -116,7 +116,7 @@ const ITEMS = {
 		"cost": 10,
 		"attack": 2,
 		"dropValue": 20,
-		"levels": [ 0, 99 ],
+		"levels": [ 0, 5 ],
 		"color": 42
 	},
 	"bronze_dagger": {
@@ -126,7 +126,7 @@ const ITEMS = {
 		"cost": 20,
 		"attack": 3,
 		"dropValue": 20,
-		"levels": [ 0, 99 ],
+		"levels": [ 0, 5 ],
 		"color": 38,
 		"article": "an"
 	},
@@ -137,7 +137,7 @@ const ITEMS = {
 		"cost": 30,
 		"attack": 5,
 		"dropValue": 20,
-		"levels": [ 1, 99 ],
+		"levels": [ 1, 6 ],
 		"color": 38,
 		"article": "an"
 	},
@@ -148,7 +148,7 @@ const ITEMS = {
 		"cost": 35,
 		"attack": 6,
 		"dropValue": 20,
-		"levels": [ 2, 99 ],
+		"levels": [ 2, 7 ],
 		"color": 38,
 		"article": "an"
 	},
@@ -159,7 +159,7 @@ const ITEMS = {
 		"cost": 40,
 		"attack": 7,
 		"dropValue": 10,
-		"levels": [ 3, 99 ],
+		"levels": [ 3, 8 ],
 		"color": 38,
 		"article": "an"
 	},
@@ -170,7 +170,7 @@ const ITEMS = {
 		"cost": 50,
 		"attack": 8,
 		"dropValue": 10,
-		"levels": [ 4, 99 ],
+		"levels": [ 4, 10 ],
 		"color": 7,
 		"article": "an"
 	},
@@ -181,7 +181,7 @@ const ITEMS = {
 		"cost": 55,
 		"attack": 9,
 		"dropValue": 10,
-		"levels": [ 5, 99 ],
+		"levels": [ 5, 11 ],
 		"color": 7,
 		"article": "an"
 	},
@@ -192,7 +192,7 @@ const ITEMS = {
 		"cost": 75,
 		"attack": 12,
 		"dropValue": 5,
-		"levels": [ 6, 99 ],
+		"levels": [ 6, 12 ],
 		"color": 7,
 		"article": "an"
 	},
@@ -203,7 +203,7 @@ const ITEMS = {
 		"cost": 100,
 		"attack": 15,
 		"dropValue": 5,
-		"levels": [ 7, 99 ],
+		"levels": [ 7, 13 ],
 		"color": 7,
 		"article": "an"
 	},
@@ -214,7 +214,7 @@ const ITEMS = {
 		"cost": 110,
 		"attack": 16,
 		"dropValue": 5,
-		"levels": [ 8, 99 ],
+		"levels": [ 8, 14 ],
 		"color": 7,
 		"article": "an"
 	},
@@ -225,7 +225,7 @@ const ITEMS = {
 		"cost": 120,
 		"attack": 17,
 		"dropValue": 5,
-		"levels": [ 9, 99 ],
+		"levels": [ 9, 15 ],
 		"color": 89,
 		"article": "an"
 	},
@@ -236,7 +236,7 @@ const ITEMS = {
 		"cost": 130,
 		"attack": 18,
 		"dropValue": 5,
-		"levels": [ 10, 99 ],
+		"levels": [ 10, 16 ],
 		"color": 89,
 		"article": "an"
 	},
@@ -247,7 +247,7 @@ const ITEMS = {
 		"cost": 150,
 		"attack": 20,
 		"dropValue": 5,
-		"levels": [ 11, 99 ],
+		"levels": [ 11, 17 ],
 		"color": 31,
 		"article": "an"
 	},
@@ -295,7 +295,7 @@ const ITEMS = {
 		"cost": 10,
 		"attack": 2,
 		"dropValue": 35,
-		"levels": [ 0, 99 ],
+		"levels": [ 0, 6 ],
 		"color": 5,
 		"distance": 5
 	},
@@ -307,7 +307,7 @@ const ITEMS = {
 		"cost": 150,
 		"attack": 5,
 		"dropValue": 25,
-		"levels": [ 5, 99 ],
+		"levels": [ 5, 12 ],
 		"color": 89,
 		"distance": 7
 	},
@@ -344,7 +344,7 @@ const ITEMS = {
 		"cost": 5,
 		"attack": 3,
 		"dropValue": 35,
-		"levels": [ 0, 99 ],
+		"levels": [ 0, 10 ],
 		"color": 5,
 		"stackable": true,
 		"article": "a",
@@ -357,13 +357,14 @@ const ITEMS = {
 		"cost": 50,
 		"attack": 3,
 		"dropValue": 25,
-		"levels": [ 5, 99 ],
+		"levels": [ 5, 15 ],
 		"stackable": true,
 		"color": 89,
 		"distance": 4
 	},
 	"great_javelin": {
 		"name": "great javelin",
+		"shortName": "g javelin",
 		"symbol": String.fromCharCode( 92 ),
 		"weapon": "range",
 		"cost": 100,
@@ -437,7 +438,7 @@ const ITEMS = {
 		"cost": 2,
 		"defense": 1,
 		"dropValue": 20,
-		"levels": [ 0, 99 ],
+		"levels": [ 0, 5 ],
 		"color": 13
 	},
 	"leather_armor": {
@@ -447,7 +448,7 @@ const ITEMS = {
 		"cost": 20,
 		"defense": 5,
 		"dropValue": 15,
-		"levels": [ 1, 99 ],
+		"levels": [ 1, 8 ],
 		"color": 114
 	},
 	"bronze_armor": {
@@ -457,7 +458,7 @@ const ITEMS = {
 		"cost": 40,
 		"defense": 8,
 		"dropValue": 10,
-		"levels": [ 5, 99 ],
+		"levels": [ 5, 10 ],
 		"color": 42
 	},
 	"iron_armor": {

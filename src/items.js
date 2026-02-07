@@ -19,7 +19,7 @@ const ITEMS = {
 		"name": ITEM_TORCH,
 		"symbol": "!",
 		"cost": 3,
-		"dropValue": 75,
+		"dropValue": 70,
 		"levels": [ 0, 99 ],
 		"color": 40,
 		"stackable": true,
@@ -48,7 +48,7 @@ const ITEMS = {
 		"stackable": true,
 		"plural": "waters",
 		"article": "a bottle of",
-		"thirst": 70
+		"thirst": 65
 	},
 	
 	// Potions
@@ -115,7 +115,7 @@ const ITEMS = {
 		"weapon": "melee",
 		"cost": 10,
 		"attack": 2,
-		"dropValue": 20,
+		"dropValue": 10,
 		"levels": [ 0, 5 ],
 		"color": 42
 	},
@@ -437,7 +437,7 @@ const ITEMS = {
 		"armor": "body",
 		"cost": 2,
 		"defense": 1,
-		"dropValue": 20,
+		"dropValue": 10,
 		"levels": [ 0, 5 ],
 		"color": 13
 	},
@@ -448,7 +448,7 @@ const ITEMS = {
 		"cost": 20,
 		"defense": 5,
 		"dropValue": 15,
-		"levels": [ 1, 8 ],
+		"levels": [ 0, 8 ],
 		"color": 114
 	},
 	"bronze_armor": {
@@ -457,9 +457,19 @@ const ITEMS = {
 		"armor": "body",
 		"cost": 40,
 		"defense": 8,
-		"dropValue": 10,
-		"levels": [ 5, 10 ],
+		"dropValue": 15,
+		"levels": [ 2, 10 ],
 		"color": 42
+	},
+	"brigandine_armor": {
+		"name": "brigandine armor",
+		"symbol": "&",
+		"armor": "body",
+		"cost": 60,
+		"defense": 10,
+		"dropValue": 15,
+		"levels": [ 4, 15 ],
+		"color": 85
 	},
 	"iron_armor": {
 		"name": "iron armor",
@@ -467,7 +477,7 @@ const ITEMS = {
 		"armor": "body",
 		"cost": 100,
 		"defense": 15,
-		"dropValue": 10,
+		"dropValue": 15,
 		"levels": [ 10, 99 ],
 		"color": 7
 	},

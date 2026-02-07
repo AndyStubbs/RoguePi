@@ -5,8 +5,7 @@
 */
 
 const OFFSET_X = 17;
-//const END_TURN_ENEMY_SPAWN_CHANCE = 0.01;
-const END_TURN_ENEMY_SPAWN_CHANCE = 0;
+const END_TURN_ENEMY_SPAWN_CHANCE = 0.01;
 const SHOP_CHANCE = 0.3;
 
 const g_mainScreen = $.screen( "640m350" );
@@ -19,8 +18,10 @@ g_messageScreen.setFont( 2 );
 $.setScreen( g_mainScreen );
 
 let g_level;
+let g_litTiles;
 
 $.ready( () => {
+	g_tiles.init();
 	g_intro.runIntro();
 } );
 
@@ -38,17 +39,38 @@ function render() {
 	$.cls();
 
 	// Render map
-	const litTiles = getLitTiles();
-	for( const tileId in litTiles ) {
-		const tile = litTiles[ tileId ];
-		g_player.map[ tile.y ][ tile.x ] = g_level.map[ tile.y ][ tile.x ];
+	g_litTiles = getLitTiles();
+	for( const tileId in g_litTiles ) {
+		const tile = g_litTiles[ tileId ];
+
+		// If the tile is a path, special case for dark paths
+		let isDarkPath = false;
+		if(
+			( tile.x !== g_player.x || tile.y !== g_player.y ) &&
+			g_player.map[ tile.y ][ tile.x ] !== TILE_PATH &&
+			g_level.map[ tile.y ][ tile.x ] === TILE_PATH
+		) {
+			const dx = tile.x - g_player.x;
+			const dy = tile.y - g_player.y;
+			const distance = Math.sqrt( dx * dx + dy * dy );
+			if( distance >= g_player.lightRadius - 0.25 ) {
+				g_player.map[ tile.y ][ tile.x ] = TILE_PATH_DARK;
+				isDarkPath = true;
+			}
+		}
+
+		// Update player map
+		if( !isDarkPath ) {
+			g_player.map[ tile.y ][ tile.x ] = g_level.map[ tile.y ][ tile.x ];
+		}
 	}
-	g_dungeonMap.renderMap( g_player.map, litTiles, g_player.depth - 1 );
+
+	g_dungeonMap.renderMap( g_player.map, g_litTiles, g_player.depth - 1 );
 
 	// Render Items
 	for( const item of g_level.items ) {
 		const tileId = `${item.x},${item.y}`;
-		if( !litTiles[ tileId ] ) {
+		if( !g_litTiles[ tileId ] ) {
 			continue;
 		}
 		$.setColor( item.color );
@@ -58,7 +80,7 @@ function render() {
 
 	// Render exit
 	const exitTileId = `${g_level.exitLocation.x},${g_level.exitLocation.y}`;
-	if( litTiles[ exitTileId ] ) {
+	if( g_litTiles[ exitTileId ] ) {
 		$.setPos( g_level.exitLocation.x + OFFSET_X, g_level.exitLocation.y );
 		$.setColor( 7 );
 		$.print( TILE_EXIT, true );
@@ -72,7 +94,7 @@ function render() {
 	// Render enemies
 	for( const enemy of g_level.enemies ) {
 		const tileId = `${enemy.x},${enemy.y}`;
-		if( !litTiles[ tileId ] ) {
+		if( !g_litTiles[ tileId ] ) {
 			continue;
 		}
 		$.setColor( enemy.color );
@@ -111,7 +133,7 @@ function render() {
 		$.clearEvents();
 		setTimeout( () => {
 			$.cls( OFFSET_X * 8, 0, $.width(), $.height() );
-			g_dungeonMap.renderMap( g_player.map, litTiles, g_player.depth - 1 );
+			g_dungeonMap.renderMap( g_player.map, g_litTiles, g_player.depth - 1 );
 			showLevelClearedAnimation();
 		}, 1000 );
 	}
@@ -386,8 +408,8 @@ function move( dx, dy ) {
 		}, 2500 );
 		return;
 	}
-	render();
 	endTurn();
+	render();
 }
 
 function renderStats() {
@@ -711,6 +733,10 @@ async function useItem( itemIndex ) {
 			if( item.quantity === 0 ) {
 				g_player.items.splice( itemIndex, 1 );
 			}
+		} else {
+			g_player.messages.push( `You cannot use ${item.article} ${item.name}.` );
+			render();
+			return;
 		}
 		endTurn();
 		render();
@@ -1138,7 +1164,7 @@ function spawnEnemy() {
 	}
 
 	// Make sure enemy only spawns in a dark room
-	if( m_litTiles[ `${enemy.y},${enemy.x}` ] ) {
+	if( g_litTiles[ `${enemy.y},${enemy.x}` ] ) {
 		return;
 	}
 	g_level.enemies.push( enemy );

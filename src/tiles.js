@@ -16,6 +16,7 @@ const TILE_WALL_SW = String.fromCharCode( 200 );
 const TILE_WALL_S = String.fromCharCode( 205 );
 const TILE_WALL_SE = String.fromCharCode( 188 );
 const TILE_PATH = String.fromCharCode( 176 );
+const TILE_PATH_DARK = String.fromCharCode( 249 );
 const TILE_WALKABLE = [
 	TILE_FLOOR, TILE_DOOR, TILE_PATH
 ];
@@ -37,3 +38,9 @@ const TILE_HIDDEN = [ TILE_HIDDEN_DOOR, TILE_HIDDEN_PATH ];
 const TILE_TRAVERSABLE = [
 	TILE_FLOOR, TILE_DOOR, TILE_PATH, TILE_HIDDEN_PATH
 ];
+
+const g_tiles ={
+	"init": () => {
+		$.setChar( 249, "0022000800220000" );
+	}
+};

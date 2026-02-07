@@ -118,7 +118,7 @@ window.g_enemies = ( function () {
 			"attack": 10,
 			"defense": 15,
 			"vision": 11,
-			"levels": [ 7, 15 ],
+			"levels": [ 7, 16 ],
 			"spawnValue": 5,
 			"experience": 25,
 			"loot": []
@@ -131,20 +131,20 @@ window.g_enemies = ( function () {
 			"attack": 15,
 			"defense": 12,
 			"vision": 5,
-			"levels": [ 8, 15 ],
+			"levels": [ 8, 17 ],
 			"spawnValue": 10,
 			"experience": 30,
 			"loot": []
 		}, 
 		{
 			"name": "Ogre",
-			"symbol": "O",
+			"symbol": "G",
 			"color": 120,
 			"hitPoints": 30,
 			"attack": 15,
 			"defense": 10,
 			"vision": 5,
-			"levels": [ 9, 15 ],
+			"levels": [ 9, 18 ],
 			"spawnValue": 5,
 			"experience": 45,
 			"loot": []

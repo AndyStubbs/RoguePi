@@ -11,8 +11,8 @@ const g_player = ( function () {
 		"Hero",
 		"Legend"
 	];
-	const LEVELS =     [ 0,  10, 25, 60, 100, 250,  500, 99999 ];
-	const HIT_POINTS = [ 15, 20, 35, 50,  65,  85,  100, 150 ];
+	const LEVELS =     [ 0,  10, 30, 60, 150, 500, 1500, 999999 ];
+	const HIT_POINTS = [ 15, 20, 35, 50,  65,  85, 100,  150 ];
 	const HEALING_RATE = 0.01;
 
 	return {
@@ -150,9 +150,12 @@ const g_player = ( function () {
 	}
 
 	function heal() {
-		g_player.hitPoints = Math.min(
-			g_player.hitPoints + g_player.maxHitPoints * HEALING_RATE, g_player.maxHitPoints
-		);
+		let healingRate = HEALING_RATE;
+		if( g_player.thirst >= 100 || g_player.hunger >= 100 ) {
+			healingRate *= 0.5;
+		}
+		const healing = g_player.maxHitPoints * healingRate;
+		g_player.hitPoints = Math.min( g_player.hitPoints + healing, g_player.maxHitPoints );
 	}
 
 } )();

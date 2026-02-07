@@ -465,14 +465,17 @@ function renderStats() {
 	$.setColor( 10 );
 	printTitle( "Items" );
 	$.print();
+	const maxItemTextLength = OFFSET_X - 3;
 	for( let i = 0; i < g_player.items.length; i += 1 ) {
 		const item = g_player.items[ i ];
 		let itemText = g_util.properName( item.name );
 		if( item.quantity > 1 ) {
 			itemText += ` (${item.quantity})`;
-			if( itemText.length >= OFFSET_X ) {
-				itemText = `${item.shortName} (${item.quantity})`;
+			if( itemText.length >= maxItemTextLength && item.shortName ) {
+				itemText = `${g_util.properName( item.shortName )} (${item.quantity})`;
 			}
+		} else if( itemText.length >= maxItemTextLength && item.shortName ) {
+			itemText = g_util.properName( item.shortName );
 		}
 		if( item.equipped ) {
 			printStat( i, itemText, 10, 2 );
@@ -1148,7 +1151,10 @@ function combatStrike( entity, target, isRange, missleName ) {
 }
 
 function spawnEnemy() {
-	const enemy = getEnemy( g_player.level );
+	const enemy = g_enemies.getEnemy( g_player.level );
+	if( !enemy ) {
+		return;
+	}
 	const room = g_level.rooms[ Math.floor( Math.random() * g_level.rooms.length ) ];
 	enemy.x = room.x + Math.floor( Math.random() * ( room.w - 2 ) ) + 1;
 	enemy.y = room.y + Math.floor( Math.random() * ( room.h - 2 ) ) + 1;
@@ -1167,6 +1173,7 @@ function spawnEnemy() {
 	if( g_litTiles[ `${enemy.y},${enemy.x}` ] ) {
 		return;
 	}
+	console.log( "Spawning enemy", enemy );
 	g_level.enemies.push( enemy );
 }
 

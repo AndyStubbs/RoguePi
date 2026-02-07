@@ -463,6 +463,7 @@ const ITEMS = {
 	},
 	"brigandine_armor": {
 		"name": "brigandine armor",
+		"shortName": "brigandine",
 		"symbol": "&",
 		"armor": "body",
 		"cost": 60,

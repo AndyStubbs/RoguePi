@@ -18,6 +18,7 @@ window.g_dungeonMap = ( function () {
 	colorSet1[ TILE_FLOOR ] = [ 2, 191 ];
 	colorSet1[ TILE_PATH ] = [ 7, 8 ];
 	colorSet1[ TILE_PATH_DARK ] = [ 8, 8 ];
+	colorSet1[ TILE_DOOR ] = [ 7, 8 ];
 	colorSet1.WALLS = [ 6, 186 ];
 
 	// Ice walls
@@ -25,6 +26,7 @@ window.g_dungeonMap = ( function () {
 	colorSet2[ TILE_FLOOR ] = [ 35, 179 ];
 	colorSet2[ TILE_PATH ] = [ 78, 227 ];
 	colorSet2[ TILE_PATH_DARK ] = [ 8, 8 ];
+	colorSet2[ TILE_DOOR ] = [ 78, 227 ];
 	colorSet2.WALLS = [ 3, 197 ];
 
 	// Stone Walls
@@ -32,6 +34,7 @@ window.g_dungeonMap = ( function () {
 	colorSet3[ TILE_FLOOR ] = [ 7, 8 ];
 	colorSet3[ TILE_PATH ] = [ 7, 8 ];
 	colorSet3[ TILE_PATH_DARK ] = [ 8, 8 ];
+	colorSet1[ TILE_DOOR ] = [ 7, 8 ];
 	colorSet3.WALLS = [ 7, 8 ];
 
 	// Fire Cave
@@ -39,6 +42,7 @@ window.g_dungeonMap = ( function () {
 	colorSet4[ TILE_FLOOR ] = [ 7, 8 ];
 	colorSet4[ TILE_PATH ] = [ 7, 8 ];
 	colorSet4[ TILE_PATH_DARK ] = [ 8, 8 ];
+	colorSet4[ TILE_DOOR ] = [ 7, 8 ];
 	colorSet4.WALLS = [ 4, 112 ];
 
 	// Levels 1 - 6

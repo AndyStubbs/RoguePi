@@ -26,6 +26,7 @@ $.ready( () => {
 } );
 
 function startLevel() {
+	g_player.archivedMessages = [];
 	g_level = g_dungeonMap.createMap( $.getCols() - OFFSET_X, $.getRows(), g_player.depth );
 	g_player.fn.resetMap( $.getCols() - OFFSET_X, $.getRows() );
 	//g_player.fn.revealMap( g_level );
@@ -115,6 +116,7 @@ function render() {
 	if( g_player.messages.length > 0 ) {
 		let message = g_player.messages.join( "\n" );
 		printMessage( message );
+		g_player.archivedMessages.push( message );
 	}
 	g_player.messages = [];
 
@@ -328,10 +330,13 @@ function hasLineOfSight( x1, y1, x2, y2 ) {
 }
 
 function addGameKeys() {
-	$.setActionKeys( [ "F1" ] );
+	$.setActionKeys( [ "F1", "F2" ] );
 
 	// Help
 	$.onkey( "F1", "down", () => g_help.showHelp(), false, false );
+
+	// Show Messages
+	$.onkey( "F2", "down", () => showMessages(), false, false );
 
 	// Up
 	$.onkey( "w", "down", () => move( 0, -1 ), false, true );
@@ -495,6 +500,7 @@ function renderStats() {
 	printStat( "R", "Rest", 3 );
 	$.print();
 	printStat( "F1", "Help", 4 );
+	printStat( "F2", "Messages", 4 );
 }
 
 function printTitle( title ) {
@@ -638,6 +644,54 @@ function printMessage( msg ) {
 function drawMessageBorder( x, y, height ) {
 	$.setColor( 15 );
 	$.rect( x - 8, y - 8, g_messageScreen.width() + 16, height + 16, 16 );
+}
+
+async function showMessages() {
+	$.clearEvents();
+	render();
+	
+	let currentPage = g_player.archivedMessages.length - 1;
+	const pages = g_player.archivedMessages.length;
+	const getMessage = () => {
+		let message;
+		if( pages > 0 ) {
+			message = g_player.archivedMessages[ currentPage ];
+		} else {
+			message = "No messages to show.";
+		}
+		const B = String.fromCharCode( 179 );
+		const L = "----------------------------------------";
+		const navText = `Keys: ${String.fromCharCode( 27 )} ${B} ${String.fromCharCode( 26 )} ${B} Enter to exit ${B} `;
+		return message + `\n\n${L}\n\n` + navText + ` ${currentPage + 1} of ${pages}`;
+	};
+
+	const changePage = ( direction ) => {
+		currentPage += direction;
+		if( currentPage < 0 ) {
+			currentPage = 0;
+		} else if( currentPage >= pages ) {
+			currentPage = pages - 1;
+		}
+		render();
+		printMessage( getMessage() );
+	};
+
+	const exitMessages = () => {
+		$.clearEvents();
+		addGameKeys();
+		render();
+		return;
+	};
+
+	printMessage( getMessage() );
+
+	$.onkey( "Enter", "down", exitMessages, false, true );
+	$.onkey( "Escape", "down", exitMessages, false, true );
+
+	if( pages > 0 ) {
+		$.onkey( "ArrowLeft", "down", () => changePage( -1 ), false, true );
+		$.onkey( "ArrowRight", "down", () => changePage( 1 ), false, true );
+	}
 }
 
 async function useItem( itemIndex ) {

@@ -34,6 +34,7 @@ const g_player = ( function () {
 		"lightFade": 0.01,
 		"map": [],
 		"messages": [],
+		"archivedMessages": [],
 		"items": [],
 		"armor": {
 			"head": null,

@@ -553,6 +553,8 @@ function pickupItems() {
 						`many items.`;
 				}
 				g_player.messages.push( pickupMsg );
+			} else if( !isAdded ) {
+				g_player.messages.push( `You cannot pick up ${item.article} ${item.name} because you are holding too many items.` );
 			}
 		}
 	}
@@ -1205,7 +1207,7 @@ function combatStrike( entity, target, isRange, missleName ) {
 }
 
 function spawnEnemy() {
-	const enemy = g_enemies.getEnemy( g_player.level );
+	const enemy = g_enemies.getEnemy( g_player.depth );
 	if( !enemy ) {
 		return;
 	}
